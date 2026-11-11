@@ -1,0 +1,260 @@
+.rv-scroll {
+  position: relative;
+  height: 420vh;
+  color: var(--anatomy-text);
+  font: 14px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.rv-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+
+.rv-figure {
+  margin: 0;
+  width: min(1180px, 100%);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  gap: 28px;
+  align-items: center;
+}
+
+.rv-figure .iso-plate {
+  padding: 44px 20px;
+}
+
+.rv-stage {
+  outline: none;
+  touch-action: pan-y;
+}
+
+.rv-stage:focus-visible {
+  outline: 1px solid var(--anatomy-muted);
+  outline-offset: 6px;
+}
+
+/* Fit the drawing (760 × 620) inside the viewport height as well as the column width. */
+.rv-stage .iso-svg {
+  width: min(100%, calc((100vh - 150px) * 760 / 620));
+  height: auto;
+  aspect-ratio: 760 / 620;
+}
+
+.rv-legend {
+  margin-top: 0;
+}
+
+.rv-parts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.rv-parts-list button {
+  all: unset;
+  box-sizing: border-box;
+  width: 100%;
+  display: flex;
+  gap: 10px;
+  padding: 4px 8px;
+  cursor: pointer;
+  color: var(--anatomy-muted);
+  font-size: 13px;
+  transition: color 200ms var(--anatomy-ease), box-shadow 200ms var(--anatomy-ease);
+}
+
+.rv-parts-list button:hover,
+.rv-parts-list button:focus-visible {
+  color: var(--anatomy-text);
+}
+
+.rv-parts-list button:focus-visible {
+  box-shadow: 0 0 0 1px var(--anatomy-muted);
+}
+
+.rv-parts-list button[data-on] {
+  color: var(--anatomy-strong);
+  box-shadow: inset 2px 0 0 var(--anatomy-lit);
+}
+
+.rv-num {
+  font-family: var(--anatomy-mono);
+  font-size: 11px;
+  line-height: 20px;
+  color: var(--anatomy-mid);
+}
+
+.rv-note {
+  margin: 6px 0 0;
+  min-height: 3em;
+  color: var(--anatomy-text);
+}
+
+.rv-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* The assembly in motion is the one lit accent; everything else steps down a tone. */
+.rv-stage[data-focus] .it:not([data-on]):not([data-piece="stand"]) {
+  --anatomy-hi: var(--anatomy-mid);
+  --anatomy-mid: var(--anatomy-lo);
+}
+
+.rv-stage[data-focus] .it[data-piece="stand"] {
+  --anatomy-mid: var(--anatomy-lo);
+}
+
+.rv-stage .it[data-on] {
+  --anatomy-hi: var(--anatomy-lit);
+  --anatomy-mid: var(--anatomy-hi);
+}
+
+.rv-stage .it[data-on] .iso-top {
+  fill: var(--anatomy-lit-top);
+}
+
+.rv-stage .it[data-on] .iso-shade {
+  fill: var(--anatomy-lit-shade);
+}
+
+.rv-stage .it[data-on] [data-seamless] > .iso-shade {
+  stroke: var(--anatomy-lit-shade);
+}
+
+.rv-stage .it[data-on] [data-seamless] > .iso-top {
+  stroke: var(--anatomy-lit-top);
+}
+
+@media (max-width: 860px) {
+  .rv-figure {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+
+  .rv-parts-list,
+  .rv-legend .iso-caption {
+    display: none;
+  }
+
+  .rv-note {
+    min-height: 4.8em;
+    font-size: 13px;
+  }
+
+  .rv-stage .iso-svg {
+    width: min(100%, calc((100vh - 260px) * 760 / 620));
+  }
+}
+
+/* ---------- Blueprint variant: white and light-blue ink on blueprint blue ---------- */
+
+.iso.rv-blueprint {
+  --anatomy-page: #0b3270;
+  --anatomy-card: #0d3a80;
+  --anatomy-paper: #0d3a80;
+  --anatomy-face: #0f418c;
+  --anatomy-top: #114795;
+  --anatomy-shade-0: #0a3170;
+  --anatomy-shade-1: #0c3677;
+  --anatomy-shade-2: #0e3b7f;
+  --anatomy-shade-3: #104087;
+  --anatomy-lit-top: #1a58b8;
+  --anatomy-lit-shade: #154c9f;
+  --anatomy-hi: #eaf2ff;
+  --anatomy-mid: #9fc2f5;
+  --anatomy-lo: #6d9ae0;
+  --anatomy-faint: #3f72c4;
+  --anatomy-lit: #ffffff;
+  --anatomy-halo: #031c47;
+  --anatomy-halo-opacity: 0.55;
+  --anatomy-dot: #eaf2ff;
+  --anatomy-text: #d6e5ff;
+  --anatomy-strong: #ffffff;
+  --anatomy-muted: #93b4ea;
+}
+
+.rv-blueprint .iso-plate {
+  box-shadow: 0 0 0 1px rgba(234, 242, 255, 0.55), 0 0 0 6px var(--anatomy-card), 0 0 0 7px rgba(234, 242, 255, 0.25), 0 30px 80px -30px rgba(0, 0, 0, 0.6);
+  background-color: var(--anatomy-card);
+  background-image:
+    linear-gradient(rgba(234, 242, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(234, 242, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(rgba(234, 242, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(234, 242, 255, 0.045) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: -1px -1px;
+}
+
+.rv-blueprint .iso-plate-corner {
+  color: var(--anatomy-text);
+}
+
+.rv-blueprint .rv-parts-list button[data-on] {
+  box-shadow: inset 2px 0 0 #ffffff;
+}
+
+/* The blueprint band: full-bleed blue paper with a drafting grid, fading in from the page above. */
+.rv-band {
+  position: relative;
+  background-color: #0b3270;
+  background-image:
+    linear-gradient(rgba(234, 242, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(234, 242, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(234, 242, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(234, 242, 255, 0.03) 1px, transparent 1px);
+  background-size: 120px 120px, 120px 120px, 24px 24px, 24px 24px;
+  color: #d6e5ff;
+}
+
+.rv-band::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 160px;
+  background: linear-gradient(180deg, hsl(var(--background)), rgba(11, 50, 112, 0));
+  pointer-events: none;
+}
+
+.rv-band-head {
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 140px 16px 0;
+  text-align: center;
+}
+
+.rv-band-head p {
+  margin: 0;
+  font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #93b4ea;
+}
+
+.rv-band-head h2 {
+  margin: 12px 0 10px;
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+}
+
+.rv-band-head span {
+  font-size: 15px;
+  color: #b4cdf5;
+}
+

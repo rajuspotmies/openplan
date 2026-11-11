@@ -1,0 +1,58 @@
+/* Bench figures: one object per feature, crossfading on a shared bench mat. */
+.bench.iso[data-theme="light"] {
+  --anatomy-lit: #2f5bff;
+  --anatomy-lit-top: #f3f6ff;
+  --anatomy-lit-shade: #e3e9ff;
+  --anatomy-card: #ffffff;
+  --anatomy-page: #ffffff;
+  font-family: inherit;
+}
+
+.bench {
+  display: grid;
+  padding: 8px 0;
+}
+
+.bench-layer {
+  grid-area: 1 / 1;
+}
+
+.bench-scene {
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(10px);
+  pointer-events: none;
+  transition:
+    opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bench-scene[data-on] {
+  opacity: 1;
+  filter: none;
+  transform: none;
+  transition-delay: 0.12s;
+}
+
+/* recesses: parts bins and the ink pad */
+.bench .bn-floor {
+  fill: #ebebe8;
+}
+.bench .bn-wall-a {
+  fill: #f4f4f1;
+}
+.bench .bn-wall-b {
+  fill: #dfdfdb;
+}
+.bench .bn-ink {
+  fill: #2c2c31;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bench-scene {
+    transition: opacity 0.2s ease-out;
+    filter: none;
+    transform: none;
+  }
+}

@@ -1,0 +1,24 @@
+/* Hero workbench: transparent card, brand accent for lit parts, the open drawer's cavity. */
+.workbench.iso[data-theme="light"] {
+  --anatomy-lit: #2f5bff;
+  --anatomy-lit-top: #f3f6ff;
+  --anatomy-lit-shade: #e3e9ff;
+  --anatomy-paper: #ffffff;
+  --anatomy-card: #ffffff;
+  font-family: inherit;
+}
+
+/* fit the space the hero leaves (the kit's .iso-svg sizes by width, height:auto) */
+.workbench .wb-svg {
+  overflow: visible;
+  width: 100%;
+  height: 100%;
+}
+
+.workbench .wb-it {
+  will-change: transform, opacity;
+}
+
+.workbench .wb-cavity {
+  fill: #2c2c31;
+}

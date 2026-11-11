@@ -1,26 +1,349 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* =========================
+   DESIGN SYSTEM
+   ========================= */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 240 5% 4%;
+    --foreground: 210 15% 95%;
+
+    --card: 240 4% 7%;
+    --card-foreground: 0 0% 95%;
+
+    --popover: 0 0% 6%;
+    --popover-foreground: 0 0% 95%;
+
+    --primary: 227 100% 59%;
+    --primary-foreground: 0 0% 95%;
+    --primary-glow: 226 100% 74%;
+
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 95%;
+
+    --muted: 240 4% 9%;
+    --muted-foreground: 0 0% 65%;
+
+    --accent: 227 100% 59%;
+    --accent-foreground: 0 0% 95%;
+
+    --destructive: 0 75% 60%;
+    --destructive-foreground: 0 0% 95%;
+
+    --border: 0 0% 18%;
+    --input: 0 0% 12%;
+    --ring: 227 100% 59%;
+
+    --radius: 0.75rem;
+
+    --gradient-primary: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--accent))
+    );
+
+    --gradient-secondary: linear-gradient(
+      180deg,
+      hsl(0 0% 4%),
+      hsl(0 0% 8%)
+    );
+
+    --gradient-hero: linear-gradient(
+      135deg,
+      hsl(0 0% 3%),
+      hsl(0 0% 6%),
+      hsl(0 0% 4%)
+    );
+
+    --shadow-glow: 0 0 40px hsl(var(--primary) / 0.3);
+    --shadow-card: 0 4px 24px hsl(0 0% 0% / 0.6);
+    --shadow-elevated: 0 8px 40px hsl(0 0% 0% / 0.8);
+
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    overflow-x: clip;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    overflow-x: clip;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Performance optimizations for animations */
+  @media (prefers-reduced-motion: no-preference) {
+    * {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+/* =========================
+   UTILITIES
+   ========================= */
+
+@layer utilities {
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  @keyframes gradient-x {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  .animate-gradient-x {
+    animation: gradient-x 8s ease-in-out infinite;
+    background-size: 200% auto;
+  }
+
+  /* Global border color remap to keep a unified blue-dark system */
+  .border-white\/5 {
+    border-color: rgb(255 255 255 / 0.05) !important;
+  }
+
+  .border-white\/10 {
+    border-color: rgb(255 255 255 / 0.10) !important;
+  }
+
+  .border-white\/20 {
+    border-color: rgb(255 255 255 / 0.18) !important;
+  }
+
+  .border-white\/25 {
+    border-color: rgb(255 255 255 / 0.24) !important;
+  }
+
+  .border-white\/30 {
+    border-color: rgb(255 255 255 / 0.30) !important;
+  }
+
+  .hover\:border-white\/20:hover {
+    border-color: rgb(255 255 255 / 0.18) !important;
+  }
+
+  .hover\:border-white\/25:hover {
+    border-color: rgb(255 255 255 / 0.24) !important;
+  }
+
+  .hover\:border-white\/30:hover {
+    border-color: rgb(255 255 255 / 0.30) !important;
+  }
+
+  .bg-grid-pattern {
+    background-image: linear-gradient(rgba(255,255,255,0.06) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+
+  /* Hero Image - Display as-is from assets folder with seamless fade merge */
+  .isometric-container {
+    position: relative;
+    background: transparent;
+    border: none;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    /* Remove watermark artifacts */
+    clip-path: inset(0);
+    -webkit-clip-path: inset(0);
+    overflow: visible;
+  }
+
+  .isometric-image {
+    width: 100%;
+    max-width: 1200px;
+    display: block;
+    border: none;
+    outline: none;
+    margin: 0;
+    padding: 0;
+    image-rendering: auto;
+    background: transparent;
+    
+    /* Remove watermark artifacts - clean edges */
+    clip-path: inset(0);
+    -webkit-clip-path: inset(0);
+    
+    /* Enhanced text clarity - sharp, readable, high contrast */
+    /* Increased contrast and brightness to make text clearly visible */
+    filter: contrast(1.6) brightness(1.35) saturate(1.2);
+    -webkit-filter: contrast(1.6) brightness(1.35) saturate(1.2);
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    
+    /* Remove mask-image to ensure full visibility - no transparency effects */
+    /* All text should be clearly visible without any fade */
+    -webkit-mask-image: none;
+    mask-image: none;
+    -webkit-mask-size: none;
+    mask-size: none;
+    -webkit-mask-position: none;
+    mask-position: none;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    
+    /* Ensure full opacity - no transparency */
+    opacity: 1 !important;
+    -webkit-backface-visibility: visible;
+    backface-visibility: visible;
+  }
+
+  /* Floating glow */
+  .isometric-container::before {
+    content: "";
+    position: absolute;
+    top: 8%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    height: 65%;
+    background: radial-gradient(
+      ellipse at center,
+      hsla(var(--primary), 0.12) 0%,
+      hsla(var(--accent), 0.08) 38%,
+      transparent 72%
+    );
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: -1;
+  }
+
+  /* Badge styles */
+  .new-badge-pill {
+    display: inline-flex;
+    align-items: center;
+    background: #0B0B0F;
+    border-radius: 9999px;
+    padding: 4px 10px;
+    box-shadow: 0 0 24px rgba(168, 85, 247, 0.35);
+    gap: 4px;
+  }
+
+  .new-badge-label {
+    background: linear-gradient(135deg, #8B5CF6, #A855F7);
+    color: #FFFFFF;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .new-badge-text {
+    color: #FFFFFF;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  /* Feature Dashboard Images - Enhanced visibility for text clarity */
+  .feature-dashboard-image {
+    /* Remove any transparency effects */
+    opacity: 1 !important;
+    
+    /* Clear, natural image display - no filters that cause blue tint or unclear display */
+    filter: none !important;
+    -webkit-filter: none !important;
+    
+    /* Sharp, clear image rendering for maximum visibility */
+    image-rendering: auto !important;
+    -webkit-image-rendering: auto !important;
+    
+    /* Remove any mask effects that might cause transparency */
+    -webkit-mask-image: none;
+    mask-image: none;
+    
+    /* Ensure full opacity and visibility */
+    -webkit-backface-visibility: visible;
+    backface-visibility: visible;
+    
+    /* Natural image display - no color shifts */
+    contrast: 1 !important;
+    brightness: 1 !important;
+    saturate: 1 !important;
+  }
+
+  /* Feature Dashboard Card - White top border on the card itself */
+  .feature-dashboard-card {
+    border-top: 8px solid #FFFFFF !important;
+    border-top-width: 8px !important;
+    border-top-color: #FFFFFF !important;
+    box-shadow: 0 -5px 20px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.4) !important;
+    -webkit-box-shadow: 0 -5px 20px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.4) !important;
+    position: relative;
+  }
+
+  /* Feature Dashboard Image Container - Visible top border */
+  .feature-dashboard-container {
+    border-top: 8px solid #FFFFFF !important;
+    border-top-width: 8px !important;
+    border-top-color: #FFFFFF !important;
+    position: relative;
+    z-index: 10;
+  }
+  
+  /* Add a bright white glow effect above the border for maximum visibility */
+  .feature-dashboard-container::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 0;
+    right: 0;
+    height: 8px;
+    background: #FFFFFF !important;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 1), 0 0 30px rgba(255, 255, 255, 0.8);
+    z-index: 11;
+  }
+}
+
+/* =========================
+   BOXES, NOT CURVES
+   Every button, card, panel, chip, tab, frame and the navbar is square-cornered.
+   Only true dots and indicators (small round markers, pins, pings) stay round.
+   ========================= */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+.rounded-full:is(.h-1, .h-1\.5, .h-2, .h-2\.5, .h-3):is(.w-1, .w-1\.5, .w-2, .w-2\.5, .w-3),
+.animate-ping,
+.ops-dot,
+.ops-node9,
+img.rounded-full {
+  border-radius: 9999px !important;
 }

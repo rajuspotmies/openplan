@@ -1,0 +1,59 @@
+/* Tool cabinet figure: brand accent for the lit drawer, and the cavity tones. */
+.cabinet.iso[data-theme="light"] {
+  --anatomy-lit: #2f5bff;
+  --anatomy-lit-top: #f3f6ff;
+  --anatomy-lit-shade: #e3e9ff;
+  --anatomy-card: #ffffff;
+  --anatomy-page: #ffffff;
+  font-family: inherit;
+}
+
+.cabinet .iso-figure {
+  margin: 0;
+}
+
+/* no card: the figure sits directly on the page */
+.cabinet .iso-plate {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 40px 0 36px;
+}
+
+.cabinet .iso-legend {
+  margin-top: 14px;
+}
+
+@media (max-width: 640px) {
+  .cabinet .iso-plate {
+    padding: 44px 4px 40px;
+  }
+  .cabinet .iso-plate-corners {
+    inset: 16px 14px;
+  }
+}
+
+/* the cavity a drawer leaves behind: dark recess, lit inner wall, floor */
+.cabinet .cab-cavity {
+  fill: #2c2c31;
+}
+.cabinet .cab-cavity-wall {
+  fill: #47474e;
+}
+.cabinet .cab-cavity-floor {
+  fill: #5c5c64;
+}
+
+.cabinet .cab-drawer {
+  cursor: pointer;
+}
+
+/* bare figure: no plate corners, legend or readout around the model */
+.cabinet .iso-plate-corners,
+.cabinet .iso-legend {
+  display: none;
+}
+.cabinet .iso-plate,
+.cabinet .iso-plate:where(*) {
+  padding: 8px 0;
+}

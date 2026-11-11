@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# OpenPlan AI — website
 
-## Getting Started
+Marketing site for OpenPlan AI, built with Next.js (App Router), React 19, Tailwind CSS v3, shadcn/ui and Framer Motion.
+Ported from the previous Vite + React Router site (`hardcraft-suite`), keeping its design and content.
 
-First, run the development server:
+## Getting started
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+```sh
+npm install
+cp .env.example .env.local   # fill in the values
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Script | What it does |
+| --- | --- |
+| `npm run dev` | Start the dev server |
+| `npm run build` | Production build |
+| `npm run start` | Serve the production build |
+| `npm run lint` | ESLint |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Name | Used by |
+| --- | --- |
+| `NEXT_PUBLIC_GOOGLE_SHEETS_WEB_APP_URL` | Form submissions (`src/lib/googleSheets.ts`) |
+| `NEXT_PUBLIC_GOOGLE_SHEETS_WAITLIST_URL` | Waitlist form |
+| `NEXT_PUBLIC_GOOGLE_SHEETS_DEMO_URL` | Demo request form |
+| `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile captcha (`src/components/CaptchaField.tsx`) |
 
-## Learn More
+These were `VITE_*` in the old site; rename them in your hosting provider's settings.
 
-To learn more about Next.js, take a look at the following resources:
+## Project layout
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+src/
+  app/          Routes (one page.tsx per URL), root layout, metadata, global CSS
+  views/        Page components from the old site, rendered by the routes
+  components/   Sections, navigation, footer, shadcn/ui primitives
+  lib/          Helpers; lib/router.ts maps the old useNavigate/useLocation onto Next's router
+  hooks/
+public/
+  assets/       Images that were imported from src/assets in the old site
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Routes: `/`, `/about`, `/contact`, `/docs`, `/customers`, `/waitlist`, `/blogs`, `/terms`, `/privacy`, `/security`,
+`/industries/{medtech,drone,automotive,consumer-electronics}`, plus the unindexed test pages `/test-video` and `/test-rover-anatomy`.
