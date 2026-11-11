@@ -51,24 +51,77 @@ const Features = () => {
   const sectionRef = useRef<HTMLElement>(null);
   const inView = useInView(sectionRef, { amount: 0.35 });
   const reduce = useReducedMotion();
+  const figureRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Array<HTMLLIElement | null>>([]);
+  const [compact, setCompact] = useState(false);
 
-  // Idle tour: walk through the drawers while the section is on screen and nobody is choosing.
+  // Phones and tablets: the figure pins under the nav and scrolling the list picks the object.
   useEffect(() => {
-    if (!inView || hovering || reduce) return;
+    const query = window.matchMedia("(max-width: 1023px)");
+    const sync = () => setCompact(query.matches);
+    sync();
+    query.addEventListener("change", sync);
+    return () => query.removeEventListener("change", sync);
+  }, []);
+
+  useEffect(() => {
+    if (!compact) return;
+    let raf = 0;
+    const measure = () => {
+      raf = 0;
+      const fig = figureRef.current;
+      if (!fig) return;
+      const line = fig.getBoundingClientRect().bottom + 28;
+      let next = 0;
+      itemRefs.current.forEach((li, i) => {
+        if (li && li.getBoundingClientRect().top <= line) next = i;
+      });
+      setActive((a) => (a === next ? a : next));
+    };
+    const onScroll = () => {
+      if (!raf) raf = requestAnimationFrame(measure);
+    };
+    measure();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [compact]);
+
+  // Idle tour (desktop): walk through the objects while the section is on screen and nobody is choosing.
+  useEffect(() => {
+    if (compact || !inView || hovering || reduce) return;
     const id = window.setInterval(() => {
       if (Date.now() < pinnedUntil.current) return;
       setActive((a) => (a + 1) % features.length);
     }, TOUR_MS);
     return () => window.clearInterval(id);
-  }, [inView, hovering, reduce]);
+  }, [compact, inView, hovering, reduce]);
 
-  const pick = useCallback((i: number) => {
-    pinnedUntil.current = Date.now() + PIN_MS;
-    setActive(i);
-  }, []);
+  const pick = useCallback(
+    (i: number) => {
+      if (compact) {
+        // bring the tapped item up to the reading line under the pinned figure
+        const li = itemRefs.current[i];
+        const fig = figureRef.current;
+        if (li && fig) {
+          // where the figure's bottom sits once pinned (top-16 = 64px), not where it is now
+          const line = 64 + fig.offsetHeight + 20;
+          window.scrollTo({ top: li.getBoundingClientRect().top + window.scrollY - line, behavior: reduce ? "auto" : "smooth" });
+        }
+        return;
+      }
+      pinnedUntil.current = Date.now() + PIN_MS;
+      setActive(i);
+    },
+    [compact, reduce],
+  );
 
   return (
-    <section id="features" ref={sectionRef} className="relative overflow-hidden bg-white py-24 text-brand-ink md:py-32">
+    <section id="features" ref={sectionRef} className="relative overflow-x-clip bg-white py-24 text-brand-ink md:py-32">
       <div className="mx-auto max-w-[1240px] px-6 sm:px-8">
         {/* Header */}
         <div className="mx-auto max-w-[760px] text-center">
@@ -89,25 +142,38 @@ const Features = () => {
 
         <div className="mt-16 grid items-start gap-10 md:mt-20 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
           {/* Figure */}
-          <BlurReveal y={28} blur={18} className="lg:sticky lg:top-28">
-            <BenchFigure active={active} />
-          </BlurReveal>
+          <div
+            ref={figureRef}
+            className="sticky top-16 z-20 -mx-6 border-b border-black/[0.06] bg-white/95 px-6 backdrop-blur-sm sm:-mx-8 sm:px-8 lg:top-28 lg:z-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none"
+          >
+            <BlurReveal y={28} blur={18} className="mx-auto max-w-[460px] lg:max-w-none">
+              <BenchFigure active={active} />
+            </BlurReveal>
+          </div>
 
           {/* Feature list: hover or focus opens the drawer, click pins it */}
           <ol className="divide-y divide-black/[0.07] border-y border-black/[0.07]" onPointerLeave={() => setHovering(false)}>
             {features.map((f, i) => {
               const on = i === active;
               return (
-                <li key={f.title}>
+                <li
+                  key={f.title}
+                  ref={(el) => {
+                    itemRefs.current[i] = el;
+                  }}
+                >
                   <BlurReveal delay={0.04 * i} y={12} blur={10}>
                     <button
                       type="button"
                       aria-pressed={on}
-                      onPointerEnter={() => {
+                      onPointerEnter={(e) => {
+                        if (compact || e.pointerType !== "mouse") return;
                         setHovering(true);
                         setActive(i);
                       }}
-                      onFocus={() => setActive(i)}
+                      onFocus={() => {
+                        if (!compact) setActive(i);
+                      }}
                       onClick={() => pick(i)}
                       className="group flex w-full items-start gap-4 py-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40 sm:gap-5 sm:py-5"
                     >
@@ -126,8 +192,17 @@ const Features = () => {
                         >
                           {f.title}
                         </span>
+                        {compact ? (
+                          <span
+                            className={`block pt-2 text-[15px] leading-relaxed transition-colors duration-500 ${
+                              on ? "text-neutral-600" : "text-neutral-400"
+                            }`}
+                          >
+                            {f.description}
+                          </span>
+                        ) : null}
                         <AnimatePresence initial={false}>
-                          {on && (
+                          {!compact && on && (
                             <motion.span
                               key="desc"
                               className="block overflow-hidden"

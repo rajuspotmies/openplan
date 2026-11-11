@@ -178,7 +178,7 @@ const MedTech = () => {
 
 
                 {/* Trust Indicators */}
-                <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+                <div className="grid grid-cols-3 gap-3 pt-8 border-t border-white/10 sm:gap-6">
                   {[
                     { value: "98%", label: "First-Pass FDA Approval" },
                     { value: "500+", label: "Medical Companies" },
@@ -190,8 +190,8 @@ const MedTech = () => {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ delay: 0.4 + index * 0.1 }}
                     >
-                      <div className="text-4xl font-bold text-emerald-400 mb-2">{stat.value}</div>
-                      <div className="text-sm text-muted-foreground">{stat.label}</div>
+                      <div className="mb-2 text-[clamp(1.5rem,7vw,2.25rem)] font-bold leading-tight text-emerald-400 sm:text-4xl">{stat.value}</div>
+                      <div className="text-xs text-muted-foreground sm:text-sm">{stat.label}</div>
                     </motion.div>
                   ))}
                 </div>

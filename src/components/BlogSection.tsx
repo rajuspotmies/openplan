@@ -91,7 +91,7 @@ const BlogSection = () => {
 
           {/* Articles: one ruled sheet */}
           <BlurReveal delay={0.1} y={24} blur={12}>
-            <div className="relative mt-[clamp(48px,6vw,80px)] grid border-t border-black/[0.1] md:grid-cols-3">
+            <div className="relative mt-[clamp(48px,6vw,80px)] grid border-t border-black/[0.1] lg:grid-cols-3">
               <Cross className="-left-[5px] -top-[5px]" />
               <Cross className="-right-[5px] -top-[5px]" />
               {posts.map((post, i) => (
@@ -101,7 +101,7 @@ const BlogSection = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={`group relative flex flex-col border-b border-black/[0.1] bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/40 ${
-                    i > 0 ? "md:border-l" : ""
+                    i > 0 ? "lg:border-l" : ""
                   }`}
                 >
                   <span

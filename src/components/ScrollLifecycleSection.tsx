@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, useCallback } from "react";
-import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import { ClipboardList, ListChecks, GitBranch, Milestone, Cable, ArrowUpRight, ChevronLeft, ChevronRight, Brain } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ClipboardList, ListChecks, GitBranch, Milestone, Cable, ArrowUpRight, Brain } from "lucide-react";
 
 const feature1 = "/assets/featureImages/F1.png";
 const feature2 = "/assets/featureImages/F2.png";
@@ -9,7 +9,7 @@ const F7 = "/assets/featureImages/F7.png";
 const fai = "/assets/featureImages/kk.png";
 const requirementsImg = "/assets/featureImages/requirements.png";
 import { useNavigate } from "@/lib/router";
-import GradientReveal from "@/components/motion/GradientReveal";
+import BlurReveal, { BlurWords, revealEase } from "@/components/motion/BlurReveal";
 import WorkflowShowcase, { type WorkflowTip } from "@/components/WorkflowShowcase";
 
 const stages = [
@@ -132,268 +132,138 @@ const stages = [
   },
 ];
 
-/** Smooth expo-out curve — reads “premium” without bounce */
-const EASE_PREMIUM: [number, number, number, number] = [0.22, 1, 0.36, 1];
-
 const ScrollLifecycleSection = () => {
-  const prefersReducedMotion = useReducedMotion();
-  /* ── Shared state ── */
-
-  /* ── Desktop-specific state ── */
-
-  /* ── Mobile-specific state ── */
-  const [mobileIndex, setMobileIndex] = useState(0);
-  const [direction, setDirection] = useState(0); // -1 = prev, 1 = next
-
-  /* ── Refs ── */
-  const sectionRef = useRef<HTMLDivElement | null>(null);
-  const tocWrapperRef = useRef<HTMLDivElement | null>(null);
-  const mobileTocLinkRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const navigate = useNavigate();
+  const [current, setCurrent] = useState(0);
+  const stageRefs = useRef<Array<HTMLElement | null>>([]);
 
-  /* ── Touch / swipe refs ── */
-  const touchStartX = useRef(0);
-  const touchStartY = useRef(0);
-  const isDragging = useRef(false);
-
-  /* ── Mobile: auto-scroll the TOC strip to keep active tab visible ── */
+  /* ── Mobile: scroll-spy — the stage crossing the upper third of the screen is current ── */
   useEffect(() => {
-    const wrapper = tocWrapperRef.current;
-    const btn = mobileTocLinkRefs.current[mobileIndex];
-    if (!wrapper || !btn) return;
-    wrapper.scrollTo({
-      left: Math.max(0, btn.offsetLeft - wrapper.offsetWidth / 2 + btn.offsetWidth / 2),
-      behavior: "smooth",
-    });
-  }, [mobileIndex]);
+    const els = stageRefs.current.filter(Boolean) as HTMLElement[];
+    if (!els.length) return;
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) setCurrent(Number((e.target as HTMLElement).dataset.index));
+        }
+      },
+      { rootMargin: "-30% 0px -65% 0px" },
+    );
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
 
-  /* ── Mobile: navigate to a specific panel ── */
-  const goTo = useCallback(
-    (idx: number) => {
-      if (idx < 0 || idx >= stages.length) return;
-      setDirection(idx > mobileIndex ? 1 : -1);
-      setMobileIndex(idx);
-    },
-    [mobileIndex]
-  );
-
-  const goPrev = () => goTo(mobileIndex - 1);
-  const goNext = () => goTo(mobileIndex + 1);
-
-  /* ── Mobile: swipe gesture handlers ── */
-  const onTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
-    touchStartY.current = e.touches[0].clientY;
-    isDragging.current = true;
+  const jumpTo = (i: number) => {
+    const el = stageRefs.current[i];
+    if (!el) return;
+    window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 120, behavior: "smooth" });
   };
-
-  const onTouchEnd = (e: React.TouchEvent) => {
-    if (!isDragging.current) return;
-    isDragging.current = false;
-    const dx = e.changedTouches[0].clientX - touchStartX.current;
-    const dy = e.changedTouches[0].clientY - touchStartY.current;
-    // Only register as horizontal swipe if it's clearly horizontal
-    if (Math.abs(dx) > Math.abs(dy) * 1.5 && Math.abs(dx) > 40) {
-      if (dx < 0) goNext();
-      else goPrev();
-    }
-  };
-
-  /* ── Framer Motion slide variants ── */
-  /** Softer carousel motion so the screenshot crossfade stays the hero moment */
-  const slideVariants = {
-    enter: (d: number) => ({
-      x: prefersReducedMotion ? 0 : d > 0 ? "22%" : "-22%",
-      opacity: 0,
-    }),
-    center: {
-      x: 0,
-      opacity: 1,
-    },
-    exit: (d: number) => ({
-      x: prefersReducedMotion ? 0 : d > 0 ? "-14%" : "14%",
-      opacity: 0,
-    }),
-  };
-
-  const stage = stages[mobileIndex];
-  const MobileIcon = stage.icon;
 
   return (
-    <section id="workflow-section" ref={sectionRef} className="relative bg-white text-brand-ink">
+    <section id="workflow-section" className="relative bg-white text-brand-ink">
 
-      {/* =====================  MOBILE EXPERIENCE  ===================== */}
-      <div className="lg:hidden flex flex-col bg-white">
-
-        {/* ── Sticky horizontal TOC tab strip ── */}
-        <div
-          ref={tocWrapperRef}
-          className="sticky top-[64px] z-30 no-scrollbar overflow-x-auto bg-white/85 backdrop-blur-xl border-b border-black/[0.06]"
-        >
-          <div className="inline-flex items-end gap-0 min-w-max">
-            {stages.map((s, idx) => {
-              const TabIcon = s.icon;
-              const isActive = idx === mobileIndex;
-              return (
-                <button
-                  key={`mob-tab-${s.id}`}
-                  ref={(el) => { mobileTocLinkRefs.current[idx] = el; }}
-                  onClick={() => goTo(idx)}
-                  className={`relative flex items-center gap-2 px-4 py-3 text-sm whitespace-nowrap transition-all duration-300 focus:outline-none ${
-                    isActive
-                      ? "text-brand-ink font-medium"
-                      : "text-neutral-400 hover:text-neutral-600"
-                  }`}
-                >
-                  <TabIcon className={`h-3.5 w-3.5 flex-shrink-0 transition-all duration-300 ${isActive ? "opacity-100" : "opacity-50"}`} />
-                  <span>{s.shortLabel}</span>
-
-                  {/* Active underline */}
-                  {isActive && (
-                    <motion.span
-                      layoutId="mob-tab-underline"
-                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-brand rounded-full"
-                      transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    />
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* ── Animated panel body ── */}
-        <div
-          className="relative overflow-hidden"
-          onTouchStart={onTouchStart}
-          onTouchEnd={onTouchEnd}
-        >
-          <AnimatePresence initial={false} custom={direction} mode="wait">
-            <motion.div
-              key={mobileIndex}
-              custom={direction}
-              variants={slideVariants}
-              initial="enter"
-              animate="center"
-              exit="exit"
-              transition={{
-                duration: prefersReducedMotion ? 0 : 0.36,
-                ease: EASE_PREMIUM,
-              }}
-              className="px-4 pt-8 pb-6 space-y-6"
-            >
-              {/* ── Badge row ── */}
-              <div className="inline-flex items-center gap-2.5 text-neutral-700">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-black/10 bg-black/[0.03] text-brand">
-                  <MobileIcon className="h-4 w-4" />
-                </span>
-                <span className="font-mono text-[12px] uppercase tracking-[0.18em]">{stage.shortLabel}</span>
-              </div>
-
-              {/* ── Title ── */}
-              <GradientReveal
-                key={`m-title-${mobileIndex}`}
-                as="h3"
-                text={stage.title}
-                className="text-2xl font-medium leading-[1.2] tracking-[-0.02em] text-brand-ink"
-              />
-
-              {/* ── Feature image (crossfade + lift — carousel slide stays softer) ── */}
-              <div className="relative overflow-hidden rounded-2xl border border-black/[0.08] bg-white shadow-[0_24px_60px_-34px_rgba(10,10,11,0.35)]">
-                <div className="absolute -inset-6 rounded-[2rem] bg-[radial-gradient(circle_at_top_right,rgba(47,91,255,0.14),transparent_60%),radial-gradient(circle_at_bottom_left,rgba(124,155,255,0.12),transparent_55%)] blur-2xl pointer-events-none" />
-                <motion.div
-                  key={`mobile-shot-${mobileIndex}`}
-                  initial={
-                    prefersReducedMotion
-                      ? { opacity: 1, scale: 1, y: 0 }
-                      : { opacity: 0, scale: 0.985, y: 14 }
-                  }
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  transition={{
-                    duration: prefersReducedMotion ? 0 : 0.52,
-                    ease: EASE_PREMIUM,
-                    delay: prefersReducedMotion ? 0 : 0.05,
-                  }}
-                  className="relative origin-center will-change-transform"
-                >
-                  <img
-                    src={stage.image}
-                    alt={stage.title}
-                    className="relative w-full h-auto rounded-xl object-contain"
-                  />
-                </motion.div>
-              </div>
-
-              {/* ── Description ── */}
-              <GradientReveal
-                key={`m-desc-${mobileIndex}`}
-                as="p"
-                text={stage.description}
-                className="text-[15px] leading-relaxed text-neutral-600"
-              />
-
-              {/* ── Bullets ── */}
-              <ul className="space-y-2.5 text-neutral-700 text-[15px]">
-                {stage.bullets.map((point) => (
-                  <li key={point} className="flex items-start gap-3">
-                    <span className="mt-[9px] h-[5px] w-[5px] flex-shrink-0 rounded-full bg-brand" />
-                    <span>{point}</span>
-                  </li>
-                ))}
-              </ul>
-
-              {/* ── CTA ── */}
-              <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-black/15 text-sm text-brand-ink hover:border-black/30 hover:bg-black/[0.03] transition-all duration-300">
-                {stage.cta}
-                <ArrowUpRight className="h-4 w-4" />
-              </button>
-            </motion.div>
-          </AnimatePresence>
-        </div>
-
-        {/* ── Bottom navigation bar: prev / progress pills / next ── */}
-        <div className="flex items-center justify-between px-4 pb-8 pt-0 gap-4">
-          {/* Prev button */}
-          <button
-            onClick={goPrev}
-            disabled={mobileIndex === 0}
-            className="flex items-center justify-center h-9 w-9 rounded-full border border-black/15 text-brand-ink disabled:opacity-25 disabled:cursor-not-allowed hover:bg-black/[0.04] transition-all duration-200"
-            aria-label="Previous"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
-
-          {/* Progress pills */}
-          <div className="flex items-center gap-2">
-            {stages.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => goTo(idx)}
-                aria-label={`Go to ${stages[idx].shortLabel}`}
-                className="relative h-[5px] rounded-full overflow-hidden bg-black/10 transition-all duration-300"
-                style={{ width: idx === mobileIndex ? 28 : 12 }}
+      {/* =====================  MOBILE: stages stacked, revealed as you scroll  ===================== */}
+      <div className="lg:hidden bg-white">
+        {/* Sticky progress: current stage and a segment per stage */}
+        <div className="sticky top-[64px] z-30 border-b border-black/[0.06] bg-white/90 px-4 pb-3 pt-3 backdrop-blur-xl">
+          <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.14em]">
+            <span className="text-neutral-400">
+              <span className="text-brand">{String(current + 1).padStart(2, "0")}</span> / {String(stages.length).padStart(2, "0")}
+            </span>
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span
+                key={current}
+                className="text-brand-ink"
+                initial={{ opacity: 0, y: 6, filter: "blur(4px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -6, filter: "blur(4px)" }}
+                transition={{ duration: 0.3, ease: revealEase }}
               >
-                {idx === mobileIndex && (
-                  <motion.span
-                    layoutId="pill-fill"
-                    className="absolute inset-0 bg-brand rounded-full"
-                  />
-                )}
+                {stages[current].shortLabel}
+              </motion.span>
+            </AnimatePresence>
+          </div>
+          <div className="mt-2.5 grid grid-cols-6 gap-1">
+            {stages.map((s, i) => (
+              <button
+                key={s.id}
+                type="button"
+                onClick={() => jumpTo(i)}
+                aria-label={`Go to ${s.shortLabel}`}
+                className="h-4 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/40"
+              >
+                <span
+                  className={`block h-[2px] w-full transition-colors duration-500 ease-out ${i <= current ? "bg-brand" : "bg-black/10"}`}
+                />
               </button>
             ))}
           </div>
-
-          {/* Next button */}
-          <button
-            onClick={goNext}
-            disabled={mobileIndex === stages.length - 1}
-            className="flex items-center justify-center h-9 w-9 rounded-full border border-black/15 text-brand-ink disabled:opacity-25 disabled:cursor-not-allowed hover:bg-black/[0.04] transition-all duration-200"
-            aria-label="Next"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
         </div>
 
+        <div className="divide-y divide-black/[0.06]">
+          {stages.map((s, i) => {
+            const Icon = s.icon;
+            return (
+              <article
+                key={s.id}
+                ref={(el) => {
+                  stageRefs.current[i] = el;
+                }}
+                data-index={i}
+                className="space-y-6 px-4 pb-14 pt-12"
+              >
+                <BlurReveal y={14} blur={10}>
+                  <div className="flex items-center gap-3 text-neutral-700">
+                    <span className="inline-flex h-9 w-9 items-center justify-center border border-black/10 bg-black/[0.03] text-brand">
+                      <Icon className="h-4 w-4" />
+                    </span>
+                    <span className="font-mono text-[12px] uppercase tracking-[0.18em]">
+                      <span className="text-neutral-400">{String(i + 1).padStart(2, "0")}</span> {s.shortLabel}
+                    </span>
+                  </div>
+                </BlurReveal>
+
+                <h3 className="text-[1.65rem] font-medium leading-[1.15] tracking-[-0.03em] text-brand-ink">
+                  <BlurWords text={s.title} />
+                </h3>
+
+                <BlurReveal y={24} blur={14} delay={0.05}>
+                  <div className="relative overflow-hidden border border-black/[0.08] bg-white shadow-[0_24px_60px_-34px_rgba(10,10,11,0.35)]">
+                    <img src={s.image} alt={s.title} loading="lazy" className="relative h-auto w-full object-contain" />
+                  </div>
+                </BlurReveal>
+
+                <BlurReveal y={14} blur={10} delay={0.05}>
+                  <p className="text-[15px] leading-relaxed text-neutral-600">{s.description}</p>
+                </BlurReveal>
+
+                <ul className="space-y-2.5 text-[15px] text-neutral-700">
+                  {s.bullets.map((point, k) => (
+                    <li key={point}>
+                      <BlurReveal y={10} blur={8} delay={0.06 * k}>
+                        <span className="flex items-start gap-3">
+                          <span className="mt-[9px] h-[5px] w-[5px] flex-shrink-0 bg-brand" />
+                          <span>{point}</span>
+                        </span>
+                      </BlurReveal>
+                    </li>
+                  ))}
+                </ul>
+
+                <BlurReveal y={10} blur={8}>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/waitlist")}
+                    className="group inline-flex h-11 items-center gap-3 border border-black/15 px-5 font-mono text-[11.5px] uppercase tracking-[0.1em] text-brand-ink transition-colors duration-300 ease-out hover:border-brand-ink hover:bg-brand-ink hover:text-white"
+                  >
+                    {s.cta}
+                    <ArrowUpRight className="h-4 w-4 transition-transform duration-300 ease-out group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+                  </button>
+                </BlurReveal>
+              </article>
+            );
+          })}
+        </div>
       </div>
 
       {/* =====================  DESKTOP: sticky product screen with stage tabs  ===================== */}

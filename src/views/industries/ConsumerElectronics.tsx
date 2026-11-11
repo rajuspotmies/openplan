@@ -138,7 +138,7 @@ const ConsumerElectronics = () => {
         {/* Hero Section - Product Showcase Layout */}
         <section className="relative py-32 overflow-hidden min-h-[90vh] flex items-center">
           <div className="container mx-auto max-w-7xl px-4 sm:px-12 relative z-10">
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="grid grid-cols-[minmax(0,1fr)] gap-12 items-center lg:grid-cols-2 lg:gap-16">
               {/* Left Content */}
               <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -162,7 +162,7 @@ const ConsumerElectronics = () => {
                   <span className="text-white">Faster</span>
                 </h1>
 
-                <p className="text-xl text-muted-foreground mb-10 leading-relaxed">
+                <p className="text-lg sm:text-xl text-muted-foreground mb-10 leading-relaxed">
                   Coordinate hardware, software, and supply chain to deliver
                   cutting-edge consumer devices at scale across global markets
                   with intelligent planning and real-time coordination.
@@ -170,7 +170,7 @@ const ConsumerElectronics = () => {
 
 
                 {/* Quick Stats */}
-                <div className="flex gap-8">
+                <div className="flex flex-wrap gap-6 sm:gap-8">
                   {[
                     { value: "50%", label: "Faster to Market" },
                     { value: "95%", label: "On-Time Launch" },
@@ -196,15 +196,15 @@ const ConsumerElectronics = () => {
                 transition={{ duration: 0.8, delay: 0.2 }}
                 className="relative"
               >
-                <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm rounded-3xl p-10 border border-purple-500/20 shadow-2xl">
+                <div className="bg-gradient-to-br from-slate-900/90 to-slate-800/90 backdrop-blur-sm rounded-3xl p-5 sm:p-10 border border-purple-500/20 shadow-2xl">
                   {/* Product Icons */}
-                  <div className="flex justify-center gap-8 mb-10">
+                  <div className="flex justify-center gap-3 mb-8 sm:gap-8 sm:mb-10">
                     {products.map((product, index) => {
                       const IconComponent = product.icon;
                       return (
                         <motion.div
                           key={index}
-                          className={`relative w-24 h-24 rounded-2xl bg-gradient-to-br ${product.color} border-2 border-purple-500/30 flex items-center justify-center cursor-pointer`}
+                          className={`relative w-16 h-16 sm:w-24 sm:h-24 rounded-2xl bg-gradient-to-br ${product.color} border-2 border-purple-500/30 flex items-center justify-center cursor-pointer`}
                           onMouseEnter={() => setHoveredProduct(index)}
                           onMouseLeave={() => setHoveredProduct(null)}
                           animate={{
@@ -217,7 +217,7 @@ const ConsumerElectronics = () => {
                             boxShadow: "0 15px 40px rgba(139, 92, 246, 0.4)"
                           }}
                         >
-                          <IconComponent className="h-12 w-12 text-purple-400" />
+                          <IconComponent className="h-8 w-8 sm:h-12 sm:w-12 text-purple-400" />
                           {hoveredProduct === index && (
                             <motion.div
                               className="absolute -top-2 -right-2 w-4 h-4 rounded-full bg-purple-400"
@@ -402,12 +402,12 @@ const ConsumerElectronics = () => {
                   whileHover={{ scale: 1.02, x: index % 2 === 0 ? -10 : 10 }}
                 >
                   <Card className="bg-gradient-to-br from-slate-900/80 to-slate-800/80 backdrop-blur-sm border-purple-500/20 hover:border-purple-500/50 transition-all">
-                    <CardContent className="p-10">
-                      <div className="flex gap-8 items-center">
-                        <div className="h-24 w-24 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border-2 border-purple-500/30 flex-shrink-0">
-                          <feature.icon className="h-12 w-12 text-purple-400" />
+                    <CardContent className="p-6 sm:p-10">
+                      <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-center sm:gap-8">
+                        <div className="h-16 w-16 sm:h-24 sm:w-24 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border-2 border-purple-500/30 flex-shrink-0">
+                          <feature.icon className="h-8 w-8 sm:h-12 sm:w-12 text-purple-400" />
                         </div>
-                        <div className="flex-1">
+                        <div className="min-w-0 flex-1">
                           <div className="inline-block px-3 py-1 rounded-full bg-purple-500/20 border border-purple-500/30 text-xs text-purple-400 font-medium mb-3">
                             {feature.highlight}
                           </div>

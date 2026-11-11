@@ -25,7 +25,7 @@ const SecurityPage = () => {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100">
       <Navigation />
-      <div className="mx-auto flex max-w-6xl flex-col px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
+      <div className="mx-auto flex max-w-6xl flex-col px-4 pb-8 pt-24 sm:px-6 lg:px-8 lg:pb-12 lg:pt-28">
         <button
           type="button"
           onClick={handleBack}

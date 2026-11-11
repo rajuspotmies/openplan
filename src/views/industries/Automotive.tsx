@@ -157,7 +157,7 @@ const Automotive = () => {
 
 
                 {/* Key Metrics */}
-                <div className="grid grid-cols-3 gap-6 pt-8 border-t border-white/10">
+                <div className="grid grid-cols-3 gap-3 pt-8 border-t border-white/10 sm:gap-6">
                   <div>
                     <div className="text-3xl font-bold text-amber-400 mb-1">35%</div>
                     <div className="text-xs text-muted-foreground">Faster Dev</div>
@@ -190,7 +190,7 @@ const Automotive = () => {
                   </div>
 
                   {/* ECU Grid */}
-                  <div className="grid grid-cols-4 gap-4 mb-6">
+                  <div className="grid grid-cols-2 gap-3 mb-6 sm:grid-cols-4 sm:gap-4">
                     {vehicleSystems.map((system, index) => (
                       <motion.div
                         key={index}

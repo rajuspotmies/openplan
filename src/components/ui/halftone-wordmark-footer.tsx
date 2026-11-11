@@ -247,7 +247,8 @@ export default function HalftoneWordmarkFooter({
       const face = o.fontWeight + " 100px " + o.fontFamily
       m.font = face
       const word = o.wordmark || " "
-      const fit = hwfFitSize(m.measureText(word).width, w * 1.02)
+      // narrow screens keep the whole word inside the frame; wide ones let it bleed a hair
+      const fit = hwfFitSize(m.measureText(word).width, w * (w < 640 ? 0.94 : 1.02))
       m.font = o.fontWeight + " " + fit + "px " + o.fontFamily
       const box = m.measureText(word)
       const cap = box.actualBoundingBoxAscent || fit * 0.72

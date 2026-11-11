@@ -247,11 +247,15 @@
 @media (max-width: 760px) {
   .ops-stage { overflow-x: clip; }
   .ops-stage svg { width: 190% !important; margin-left: -45%; }
-  .ops-tags { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 18px; margin-top: 30px; }
+}
+/* Phones and tablets: the floating labels need desktop width, so they become a 2 × 2 list */
+@media (max-width: 1023px) {
+  .ops-tags { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 18px; margin-top: 30px; }
   .ops-tag,
-  .ops-tag[data-side="l"] { position: static; transform: none; justify-items: start; text-align: left; max-width: none; }
-  .ops-tagFig { font-size: 28px; }
-  .ops-tagName { font-size: 10.5px; }
+  .ops-tag[data-side="l"] { position: static; transform: none; justify-items: start; text-align: left; max-width: none; min-width: 0; }
+  .ops-tagFig { font-size: 28px; flex-wrap: wrap; white-space: normal; row-gap: 4px; }
+  .ops-tagName { font-size: 10.5px; white-space: normal; line-height: 1.35; }
+  .ops-tagName b { display: block; margin: 0 0 4px; }
   .ops-hint { position: static; transform: none; margin-top: 24px; text-align: center; }
   .ops-lead { display: none; }
 }
