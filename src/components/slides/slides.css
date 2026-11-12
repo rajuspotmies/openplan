@@ -310,9 +310,15 @@
   .ops-name { font-size: 16.5px; }
   .ops-sub { font-size: 14.5px; }
 }
+/* Phones and tablets: the map is redrawn as a vertical flow (SystemSlide renders it). */
 @media (max-width: 900px) {
-  .ops-plan { display: none; }
-  .ops-schem { display: grid; gap: 10px; width: 100%; max-width: 520px; margin: 0 auto; }
+  .ops-plan[data-vertical] { box-sizing: border-box; width: 100%; max-width: calc(440px + 2 * var(--pad)); padding-inline: var(--pad); }
+  .ops-plan[data-vertical] .ops-name { font-size: 13.5px; }
+  .ops-plan[data-vertical] .ops-head { font-size: 11px; }
+  /* the card runs edge to edge inside the rails so the map gets the full width */
+  .ops-map .ops-fig { margin-inline: calc(-1 * var(--pad)); padding: 16px 0; border-inline: 0; }
+  .ops-map .ops-figTop,
+  .ops-map .ops-figFoot { padding-inline: var(--pad); }
 }
 .ops-node { min-width: 0; padding: 13px 12px 14px; border: 1px solid var(--line-2); background: #070708; }
 .ops-node[data-core] { border-color: rgba(255, 255, 255, 0.5); }
@@ -390,15 +396,16 @@
   opacity: 0;
   visibility: hidden;
   transform: translateY(14px) scale(0.985);
-  filter: blur(4px);
-  transition: opacity 0.5s ease, transform 0.7s var(--ease), filter 0.5s ease, visibility 0s linear 0.5s;
+  /* opacity + transform only, on its own layer: the swap runs on the compositor and never
+     re-rasterises the figure (a blur filter here repainted the whole SVG every frame) */
+  will-change: opacity, transform;
+  transition: opacity 0.5s ease, transform 0.7s var(--ease), visibility 0s linear 0.5s;
 }
 .ops-slot[data-on] {
   opacity: 1;
   visibility: visible;
   transform: none;
-  filter: none;
-  transition: opacity 0.5s ease 0.08s, transform 0.7s var(--ease) 0.08s, filter 0.5s ease 0.08s, visibility 0s;
+  transition: opacity 0.5s ease 0.08s, transform 0.7s var(--ease) 0.08s, visibility 0s;
 }
 .ops-rail {
   grid-area: 1 / 2;

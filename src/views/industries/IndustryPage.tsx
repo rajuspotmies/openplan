@@ -242,7 +242,7 @@ export default function IndustryPage({ c }: { c: IndustryConfig }) {
                             <span>Fig. {pad2(i)}</span>
                             <span>{it.caption}</span>
                           </div>
-                          <Fig play theme="light" intensity={0.6} label={it.caption} className="mx-auto max-w-[340px]" />
+                          <Fig play theme="auto" intensity={0.6} label={it.caption} className="mx-auto max-w-[340px]" />
                         </div>
                         <div className="flex flex-1 flex-col px-[clamp(20px,2.4vw,36px)] pb-9 pt-7">
                           <span className="font-mono text-[11.5px] uppercase leading-none tracking-[0.1em] text-neutral-400">{pad2(i)}</span>

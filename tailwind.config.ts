@@ -32,10 +32,15 @@ export default {
           DEFAULT: "#2F5BFF",
           hover: "#2448E6",
           light: "#7C9BFF",
-          ink: "#0A0A0B",
+          ink: "rgb(var(--c-ink) / <alpha-value>)",
         },
-        /* Base */
-        black: "#0A0A0B",
+        /* Base. white, black, ink and the neutral scale read CSS variables so the dark theme can
+           swap them inside light surfaces (see "Themes" in globals.css). */
+        white: "rgb(var(--c-white) / <alpha-value>)",
+        black: "rgb(var(--c-black) / <alpha-value>)",
+        neutral: Object.fromEntries(
+          [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950].map((k) => [k, `rgb(var(--c-n${k}) / <alpha-value>)`]),
+        ),
         background: "#0A0A0B",
         foreground: "#FFFFFF",
 

@@ -19,18 +19,18 @@
 
 .bench-scene {
   opacity: 0;
-  filter: blur(6px);
   transform: translateY(10px);
   pointer-events: none;
+  /* opacity + transform only, each scene on its own layer: the crossfade runs on the
+     compositor, and the running scene repaints without touching the mat or the others */
+  will-change: opacity, transform;
   transition:
     opacity 0.45s cubic-bezier(0.22, 1, 0.36, 1),
-    filter 0.45s cubic-bezier(0.22, 1, 0.36, 1),
     transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .bench-scene[data-on] {
   opacity: 1;
-  filter: none;
   transform: none;
   transition-delay: 0.12s;
 }
@@ -55,4 +55,26 @@
     filter: none;
     transform: none;
   }
+}
+
+/* dark theme: blue light on a dark card, darker recesses */
+.bench.iso[data-theme="dark"] {
+  --anatomy-lit: #7c9bff;
+  --anatomy-lit-top: #1a2240;
+  --anatomy-lit-shade: #141a30;
+  --anatomy-card: #0e0e10;
+  --anatomy-page: #0e0e10;
+  font-family: inherit;
+}
+.bench.iso[data-theme="dark"] .bn-floor {
+  fill: #18181b;
+}
+.bench.iso[data-theme="dark"] .bn-wall-a {
+  fill: #1f1f23;
+}
+.bench.iso[data-theme="dark"] .bn-wall-b {
+  fill: #131316;
+}
+.bench.iso[data-theme="dark"] .bn-ink {
+  fill: #050506;
 }

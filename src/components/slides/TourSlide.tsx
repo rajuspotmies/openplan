@@ -127,23 +127,39 @@ export default function TourSlide() {
   const [active, setActive] = useState(0);
   const stepRefs = useRef<(HTMLLIElement | null)[]>([]);
   const howRef = useRef<HTMLDivElement>(null);
-  const onScreen = useOnScreen(howRef, "200px");
+  // start the figures well before the section arrives, so their first frames are drawn off screen
+  const onScreen = useOnScreen(howRef, "900px 0px");
 
   useEffect(() => {
+    // Step tops are measured once (and again when anything resizes); scroll frames only read scrollY.
+    let tops: number[] = [];
+    let frame = 0;
+    const measure = () => {
+      tops = stepRefs.current.map((el) => (el ? el.getBoundingClientRect().top + window.scrollY : Infinity));
+      update();
+    };
     const update = () => {
-      const mid = window.innerHeight * 0.5;
+      frame = 0;
+      const mid = window.scrollY + window.innerHeight * 0.5;
       let a = 0;
-      stepRefs.current.forEach((el, k) => {
-        if (el && el.getBoundingClientRect().top < mid) a = k;
+      tops.forEach((t, k) => {
+        if (t < mid) a = k;
       });
       setActive(a);
     };
-    update();
-    window.addEventListener("scroll", update, { passive: true });
-    window.addEventListener("resize", update);
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(update);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(document.body);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", measure);
     return () => {
-      window.removeEventListener("scroll", update);
-      window.removeEventListener("resize", update);
+      cancelAnimationFrame(frame);
+      ro.disconnect();
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", measure);
     };
   }, []);
 

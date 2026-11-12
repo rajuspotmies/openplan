@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { useInView, useStillness } from "@/components/iso/react/live";
+import { useDark } from "@/hooks/use-dark";
 import { translateAlong } from "@/components/iso/iso-kit";
 import { HEIGHT, P, WIDTH } from "../cabinet/view";
 import { Items, MAT, normalise, sample } from "../bench/BenchFigure";
@@ -70,7 +71,7 @@ export default function IndustryFigure({
   industry,
   fig = "Fig. 01",
   title,
-  tone = "light",
+  tone,
 }: {
   industry: IndustryKey;
   fig?: string;
@@ -114,7 +115,8 @@ export default function IndustryFigure({
   }, [held, inView, still, channels, scene]);
 
   const [vy, vh] = scene.view ?? [TRIM, HEIGHT - TRIM];
-  const dark = tone === "dark";
+  const themeDark = useDark();
+  const dark = tone ? tone === "dark" : themeDark;
 
   return (
     <figure className={`ind-card relative m-0 border ${dark ? "border-white/[0.1] bg-[#0E0E10]" : "border-black/[0.1] bg-white"}`}>

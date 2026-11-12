@@ -39,3 +39,11 @@
 .group:hover .hl-plate {
   --hairline-plate: #fafafb;
 }
+
+html.dark .hl-plate {
+  --hairline-plate: #0e0e10;
+  --hairline-hi: #f4f4f5;
+}
+html.dark .group:hover .hl-plate {
+  --hairline-plate: #141417;
+}

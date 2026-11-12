@@ -75,6 +75,14 @@
   html {
     scroll-behavior: smooth;
     overflow-x: clip;
+    /* the page scrolls without a visible scrollbar */
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar {
+    display: none;
   }
 
   body {
@@ -347,3 +355,91 @@
 img.rounded-full {
   border-radius: 9999px !important;
 }
+
+/* =========================
+   THEMES
+   Light is the designed default. Dark keeps every dark section as it is and turns the light
+   surfaces dark: white, black, ink and the neutral scale are CSS variables (tailwind.config.ts),
+   and inside a light surface the dark theme swaps them. The nav, the footer and dark sections
+   nested in a light surface reset them, so their own white text stays white.
+   ========================= */
+:root {
+  --c-white: 255 255 255;
+  --c-black: 10 10 11;
+  --c-ink: 10 10 11;
+  --c-n50: 250 250 250;
+  --c-n100: 245 245 245;
+  --c-n200: 229 229 229;
+  --c-n300: 212 212 212;
+  --c-n400: 163 163 163;
+  --c-n500: 115 115 115;
+  --c-n600: 82 82 82;
+  --c-n700: 64 64 64;
+  --c-n800: 38 38 38;
+  --c-n900: 23 23 23;
+  --c-n950: 10 10 10;
+  --surface: #ffffff;
+  --surface-tint: #fafafb;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* light surfaces turn dark */
+html.dark :is(.bg-white, .bg-\[\#ffffff\], .bg-\[\#FAFAFA\], .bg-slate-50, .bg-gray-100):not(a, button, input, select, textarea) {
+  --c-white: 14 14 16;
+  --c-black: 255 255 255;
+  --c-ink: 246 246 247;
+  --c-n50: 22 22 24;
+  --c-n100: 28 28 31;
+  --c-n200: 44 44 48;
+  --c-n300: 66 66 71;
+  --c-n400: 118 118 124;
+  --c-n500: 146 146 152;
+  --c-n600: 172 172 178;
+  --c-n700: 202 202 207;
+  --c-n800: 226 226 230;
+  --c-n900: 240 240 242;
+  --c-n950: 250 250 250;
+  --surface: #0e0e10;
+  --surface-tint: #141417;
+}
+html.dark :is(.bg-\[\#ffffff\], .bg-\[\#FAFAFA\], .bg-slate-50, .bg-gray-100):not(a, button) {
+  background-color: var(--surface);
+}
+
+/* the nav, the footer and dark sections always keep the base palette */
+html.dark :is(nav, footer, .bg-brand, .bg-black, .bg-\[\#0A0A0B\], .bg-\[\#0E0E10\], .bg-\[\#0d0d0e\], .bg-\[\#101010\]) {
+  --c-white: 255 255 255;
+  --c-black: 10 10 11;
+  --c-ink: 10 10 11;
+  --c-n50: 250 250 250;
+  --c-n100: 245 245 245;
+  --c-n200: 229 229 229;
+  --c-n300: 212 212 212;
+  --c-n400: 163 163 163;
+  --c-n500: 115 115 115;
+  --c-n600: 82 82 82;
+  --c-n700: 64 64 64;
+  --c-n800: 38 38 38;
+  --c-n900: 23 23 23;
+  --c-n950: 10 10 10;
+}
+
+/* hover tints written as hex */
+html.dark .hover\:bg-\[\#FAFAFB\]:hover,
+html.dark .bg-\[\#FAFAFB\] {
+  background-color: var(--surface-tint);
+}
+
+/* the theme switch: icons cross-fade */
+.theme-ico {
+  transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+html:not(.dark) .theme-ico-moon,
+html.dark .theme-ico-sun {
+  opacity: 0;
+  transform: rotate(-60deg) scale(0.6);
+}
+

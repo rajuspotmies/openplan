@@ -59,20 +59,28 @@ export default function WorkflowShowcase({ stages, onCta }: { stages: WorkflowSt
   // whose top has crossed it; inside a step, each callout gets an equal slice.
   useEffect(() => {
     let frame = 0;
+    // Step geometry is measured once and again on resize; scroll frames only read scrollY.
+    let geo: { top: number; height: number; pad: number }[] = [];
+    const measure = () => {
+      geo = steps.current.map((el) => {
+        if (!el) return { top: Infinity, height: 0, pad: 0 };
+        const r = el.getBoundingClientRect();
+        return { top: r.top + window.scrollY, height: r.height, pad: parseFloat(getComputedStyle(el).paddingBottom) || 0 };
+      });
+      schedule();
+    };
     const update = () => {
       frame = 0;
       const line = window.innerHeight * 0.5;
       let idx = 0;
       let k = -1;
-      steps.current.forEach((el, i) => {
-        if (!el) return;
-        const r = el.getBoundingClientRect();
-        if (r.top > line) return;
+      geo.forEach((g, i) => {
+        const top = g.top - window.scrollY;
+        if (top > line) return;
         idx = i;
-        const pad = parseFloat(getComputedStyle(el).paddingBottom) || 0;
         const n = stages[i].tips.length;
-        const seg = (r.height - pad) / n;
-        k = Math.min(n - 1, Math.floor((line - r.top) / seg));
+        const seg = (g.height - g.pad) / n;
+        k = Math.min(n - 1, Math.floor((line - top) / seg));
       });
       fills.current.forEach((fill, i) => {
         if (!fill) return;
@@ -86,16 +94,20 @@ export default function WorkflowShowcase({ stages, onCta }: { stages: WorkflowSt
         setTip(k);
       }
     };
-    const schedule = () => {
+    function schedule() {
       if (!frame) frame = requestAnimationFrame(update);
-    };
+    }
+    measure();
     update();
+    const ro = new ResizeObserver(measure);
+    ro.observe(document.body);
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
+    window.addEventListener("resize", measure);
     return () => {
       cancelAnimationFrame(frame);
+      ro.disconnect();
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
+      window.removeEventListener("resize", measure);
     };
   }, [stages]);
 

@@ -192,12 +192,20 @@ const DemoVideo = () => {
   scheduleAutoRef.current = scheduleAuto;
 
   useEffect(() => {
+    // The auto-advance is an idle timer, so it only needs checking once scrolling pauses:
+    // debounce it rather than reading layout on every scroll event.
+    let settle = 0;
     const onScroll = () => {
-      if (!animatingRef.current) scheduleAuto();
+      window.clearTimeout(idleTimerRef.current);
+      window.clearTimeout(settle);
+      settle = window.setTimeout(() => {
+        if (!animatingRef.current) scheduleAuto();
+      }, 150);
     };
     scheduleAuto();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => {
+      window.clearTimeout(settle);
       window.removeEventListener("scroll", onScroll);
       window.clearTimeout(idleTimerRef.current);
       cancelAnimRef.current?.();
@@ -228,13 +236,14 @@ const DemoVideo = () => {
   const inViewRef = useRef(false);
   const expandedRef = useRef(false);
   const stoppedByUserRef = useRef(false); // manual pause, or the film finished
+  const userMutedRef = useRef(false); // the viewer pressed mute; scrolling never overrides it
   const [needsGesture, setNeedsGesture] = useState(false);
 
   const autoPlay = useCallback(async () => {
     const video = videoRef.current;
     if (!video || !video.paused) return;
-    video.muted = false;
-    setMuted(false);
+    video.muted = userMutedRef.current;
+    setMuted(userMutedRef.current);
     try {
       await video.play();
     } catch {
@@ -297,9 +306,12 @@ const DemoVideo = () => {
   // First click / tap / key press anywhere unlocks sound if we had to start muted
   useEffect(() => {
     if (!needsGesture) return;
-    const unlock = () => {
+    const unlock = (e: Event) => {
+      // a press on the player is handled by its own buttons: unmuting here as well made the
+      // mute button flip the sound twice, so its first press looked like it did nothing
+      if (e.target instanceof Node && frameRef.current?.contains(e.target)) return;
       const video = videoRef.current;
-      if (video && !video.paused && inViewRef.current) {
+      if (video && !video.paused && inViewRef.current && !userMutedRef.current) {
         video.muted = false;
         setMuted(false);
       }
@@ -349,6 +361,12 @@ const DemoVideo = () => {
     return () => cancelAnimationFrame(raf);
   }, [playing]);
 
+  // the metadata can load before React attaches onLoadedMetadata (cached video): read it once
+  useEffect(() => {
+    const video = videoRef.current;
+    if (video && video.readyState >= 1 && Number.isFinite(video.duration)) setDuration(video.duration);
+  }, []);
+
   const timeFromPointer = (clientX: number) => {
     const rect = trackRef.current?.getBoundingClientRect();
     if (!rect || duration <= 0) return 0;
@@ -393,6 +411,10 @@ const DemoVideo = () => {
     if (!video) return;
     if (video.paused) {
       stoppedByUserRef.current = false;
+      // a press is a user gesture, so sound is allowed: restore the viewer’s own choice
+      video.muted = userMutedRef.current;
+      setMuted(userMutedRef.current);
+      setNeedsGesture(false);
       void video.play();
     } else {
       stoppedByUserRef.current = true;
@@ -434,6 +456,7 @@ const DemoVideo = () => {
     const video = videoRef.current;
     if (!video) return;
     video.muted = !video.muted;
+    userMutedRef.current = video.muted;
     setMuted(video.muted);
     setNeedsGesture(false);
   };
@@ -504,6 +527,7 @@ const DemoVideo = () => {
           preload="metadata"
           playsInline
           onLoadedMetadata={(e) => setDuration(e.currentTarget.duration)}
+          onDurationChange={(e) => setDuration(e.currentTarget.duration)}
           onTimeUpdate={(e) => {
             if (!draggingRef.current)
               setCurrentTime(e.currentTarget.currentTime);
@@ -566,7 +590,7 @@ const DemoVideo = () => {
           </button>
 
           <div className="flex min-w-0 flex-1 items-center gap-3 rounded-full bg-black/60 px-4 backdrop-blur h-10">
-            <span className="hidden w-10 text-right text-xs tabular-nums text-white/80 sm:block">
+            <span className="hidden min-w-[2.75rem] whitespace-nowrap text-right font-mono text-[12px] tabular-nums tracking-[0.02em] text-white sm:block">
               {formatTime(displayTime)}
             </span>
             <div
@@ -591,12 +615,12 @@ const DemoVideo = () => {
                   style={{ width: `${progress * 100}%` }}
                 />
                 <div
-                  className="absolute top-1/2 h-3.5 w-3.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow transition-transform group-hover/scrub:scale-110"
+                  className="absolute top-1/2 h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow transition-transform group-hover/scrub:scale-125"
                   style={{ left: `${progress * 100}%` }}
                 />
               </div>
             </div>
-            <span className="hidden w-10 text-xs tabular-nums text-white/60 sm:block">
+            <span className="hidden min-w-[2.75rem] whitespace-nowrap font-mono text-[12px] tabular-nums tracking-[0.02em] text-white/60 sm:block">
               {formatTime(duration)}
             </span>
           </div>
@@ -619,8 +643,9 @@ const DemoVideo = () => {
           <button
             type="button"
             onClick={toggleMute}
-            className="absolute right-3 top-3 rounded-full bg-white/90 px-4 py-2 text-sm font-semibold text-[#0A0A0B] shadow-lg transition-colors hover:bg-white"
+            className="absolute right-3 top-3 inline-flex items-center gap-2 whitespace-nowrap bg-white/90 px-3.5 py-2 font-mono text-[11.5px] font-medium uppercase tracking-[0.1em] text-[#0A0A0B] shadow-lg transition-colors hover:bg-white"
           >
+            <VolumeX className="h-4 w-4 shrink-0" strokeWidth={1.75} aria-hidden />
             Unmute
           </button>
         )}

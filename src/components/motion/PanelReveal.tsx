@@ -22,8 +22,63 @@ const MAX_RADIUS = 64;
 const SIDE_RATIO = 260 / 1919; // side inset as a share of the viewport width
 const MAX_SIDE = 260;
 
+/**
+ * Watches an element's page position without reading layout on scroll: it is measured once,
+ * then again only when the page or the element changes size. Scroll frames just read scrollY.
+ */
+function trackGeometry(el: HTMLElement, onChange: () => void) {
+  const g = { top: 0, height: 0 };
+  const measure = () => {
+    const r = el.getBoundingClientRect();
+    g.top = r.top + window.scrollY;
+    g.height = r.height;
+    onChange();
+  };
+  measure();
+  const ro = new ResizeObserver(measure);
+  ro.observe(el);
+  ro.observe(document.body); // content above loading in moves the panel
+  window.addEventListener("resize", measure);
+  return {
+    g,
+    stop: () => {
+      ro.disconnect();
+      window.removeEventListener("resize", measure);
+    },
+  };
+}
+
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 const easeIn = (t: number) => t * t;
+
+/**
+ * The card's clip at a given closed-ness (0 = full bleed, 1 = closed card).
+ * Phones get a slim inset: the desktop one (~13.5vw) would cut into 16px content padding.
+ */
+function clipFor(amount: number, vw: number, open: string) {
+  if (amount < 0.001) return open;
+  const phone = vw < 768;
+  const side = (phone ? Math.min(12, vw * 0.03) : Math.min(MAX_SIDE, vw * SIDE_RATIO)) * amount;
+  const top = (phone ? 24 : MAX_TOP) * amount;
+  const radius = (phone ? 20 : Math.min(MAX_RADIUS, vw * 0.06)) * amount;
+  return `inset(${top.toFixed(1)}px ${side.toFixed(1)}px 0px round ${radius.toFixed(1)}px)`;
+}
+
+/**
+ * Viewport height that ignores the mobile URL bar showing and hiding (which fires
+ * resize mid-scroll and would make the clip jump). Only a width change re-reads it.
+ */
+function stableViewport() {
+  const v = { w: window.innerWidth, h: window.innerHeight };
+  const onResize = () => {
+    if (window.innerWidth !== v.w) {
+      v.w = window.innerWidth;
+      v.h = window.innerHeight;
+    }
+  };
+  window.addEventListener("resize", onResize);
+  return { v, stop: () => window.removeEventListener("resize", onResize) };
+}
 
 export default function PanelReveal({
   background,
@@ -49,19 +104,14 @@ export default function PanelReveal({
     let lastClip = "";
     const update = () => {
       frame = 0;
-      const vh = window.innerHeight;
-      const vw = window.innerWidth;
-      const rect = panel.getBoundingClientRect();
+      const { w: vw, h: vh } = view.v;
+      const rect = { top: geo.g.top - window.scrollY, bottom: geo.g.top + geo.g.height - window.scrollY };
 
       // 0 → closed card, 1 → full bleed
       const open = easeIn(clamp01((vh - rect.top) / vh));
       const close = easeIn(clamp01((vh - rect.bottom) / vh));
       const amount = Math.max(1 - open, close);
-
-      const side = Math.min(MAX_SIDE, vw * SIDE_RATIO) * amount;
-      const top = MAX_TOP * amount;
-      const radius = Math.min(MAX_RADIUS, vw * 0.06) * amount;
-      const clip = amount < 0.001 ? "inset(0px)" : `inset(${top.toFixed(1)}px ${side.toFixed(1)}px 0px round ${radius.toFixed(1)}px)`;
+      const clip = clipFor(amount, vw, "inset(0px)");
       if (clip !== lastClip) {
         panel.style.clipPath = clip;
         lastClip = clip;
@@ -81,16 +131,15 @@ export default function PanelReveal({
       if (!frame) frame = requestAnimationFrame(update);
     };
 
+    const view = stableViewport();
+    const geo = trackGeometry(panel, schedule); // re-measures as lazy content loads
     update();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    const ro = new ResizeObserver(schedule); // panel height changes as lazy content loads
-    ro.observe(panel);
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      ro.disconnect();
+      geo.stop();
+      view.stop();
       panel.style.clipPath = "";
       bg.style.visibility = "";
       delete bg.dataset.paused;
@@ -126,16 +175,12 @@ export function PanelClip({ children, className = "" }: { children: ReactNode; c
     let lastClip = "";
     const update = () => {
       frame = 0;
-      const vh = window.innerHeight;
-      const vw = window.innerWidth;
-      const rect = panel.getBoundingClientRect();
+      const { w: vw, h: vh } = view.v;
+      const rect = { top: geo.g.top - window.scrollY, bottom: geo.g.top + geo.g.height - window.scrollY };
       const open = easeIn(clamp01((vh - rect.top) / vh));
       const close = easeIn(clamp01((vh - rect.bottom) / vh));
       const amount = Math.max(1 - open, close);
-      const side = Math.min(MAX_SIDE, vw * SIDE_RATIO) * amount;
-      const top = MAX_TOP * amount;
-      const radius = Math.min(MAX_RADIUS, vw * 0.06) * amount;
-      const clip = amount < 0.001 ? "none" : `inset(${top.toFixed(1)}px ${side.toFixed(1)}px 0px round ${radius.toFixed(1)}px)`;
+      const clip = clipFor(amount, vw, "none");
       if (clip !== lastClip) {
         panel.style.clipPath = clip;
         lastClip = clip;
@@ -144,16 +189,15 @@ export function PanelClip({ children, className = "" }: { children: ReactNode; c
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(update);
     };
+    const view = stableViewport();
+    const geo = trackGeometry(panel, schedule);
     update();
     window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    const ro = new ResizeObserver(schedule);
-    ro.observe(panel);
     return () => {
       cancelAnimationFrame(frame);
       window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      ro.disconnect();
+      geo.stop();
+      view.stop();
       panel.style.clipPath = "";
     };
   }, []);

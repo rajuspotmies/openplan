@@ -3,6 +3,7 @@
 import * as React from "react";
 import { Dots, Line, Solid } from "@/components/iso/react/draw";
 import { useInView, useStillness } from "@/components/iso/react/live";
+import { useDark } from "@/hooks/use-dark";
 import { translateAlong, type Point3 } from "@/components/iso/iso-kit";
 import { MAT_ART } from "../cabinet/geometry";
 import { HEIGHT, P, WIDTH, at } from "../cabinet/view";
@@ -161,6 +162,7 @@ export default function BenchFigure({ active }: { active: number }) {
   const roots = React.useRef<Array<SVGGElement | null>>([]);
   const inView = useInView(wrap);
   const still = useStillness();
+  const dark = useDark();
 
   React.useEffect(() => {
     const root = roots.current[active];
@@ -182,7 +184,7 @@ export default function BenchFigure({ active }: { active: number }) {
   }, [active, inView, still]);
 
   return (
-    <div ref={wrap} className="iso bench" data-theme="light">
+    <div ref={wrap} className="iso bench" data-theme={dark ? "dark" : "light"}>
       <svg className="iso-svg bench-layer" viewBox={`0 ${TRIM} ${WIDTH} ${HEIGHT - TRIM}`} aria-hidden="true" focusable="false">
         {MAT}
       </svg>

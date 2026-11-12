@@ -23,13 +23,15 @@ const floorAt = (sx: number, sy: number) => {
   return { u: (a + b) / 2, v: (b - a) / 2 };
 };
 
-type TileSpec = { sx: number; sy: number; h: number; Icon: ComponentType<LucideProps>; brand: string };
+type TileSpec = { sx: number; sy: number; h: number; Icon: ComponentType<LucideProps>; brand: string; own?: boolean };
 
-function Tile({ sx, sy, h, Icon, brand }: TileSpec) {
-  const { u, v } = floorAt(sx, sy);
+/** `own`: the tile gets its own origin at (sx, sy) instead of sitting on the shared floor. */
+function Tile({ sx, sy, h, Icon, brand, own }: TileSpec) {
+  const { u, v } = own ? { u: 0, v: 0 } : floorAt(sx, sy);
+  const at = own ? { cx: sx, cy: sy } : o;
   return (
     <g style={{ ["--brand" as string]: brand }}>
-      <Slab o={o} x={u - 22} y={v - 22} w={44} d={44} r={7} h={h} topFill="var(--top)">
+      <Slab o={at} x={u - 22} y={v - 22} w={44} d={44} r={7} h={h} topFill="var(--top)">
         <rect x={u - 16} y={v - 16} width={32} height={32} rx={4} className="ops-tplate" vectorEffect="non-scaling-stroke" />
         <g transform={`translate(${u - 12} ${v - 12})`}>
           <Icon width={24} height={24} className="ops-glyph" strokeWidth={1.7} />
@@ -77,16 +79,61 @@ const PART_TRACES: Record<PartId, number[]> = {
   cloud: [7, 8],
 };
 
+/* -- Phones: the same system as a vertical flow --------------------------------
+ * Tools and sheets on top -> traces down the side lanes into OpenPlan -> live changes and
+ * checked fixes between OpenPlan and the AI Architect -> outputs down the outer lanes to
+ * Delivers. Path order matches the desktop map, so packets and highlights are shared. */
+const VW = 380;
+const VH = 864;
+const VX = 190; // spine
+const V_HUB = 290;
+const V_AI = 518;
+const V_TOOLS = [
+  { x: 52, label: "SolidWorks", Icon: Box, brand: "#ff6b6b" },
+  { x: 140, label: "Onshape", Icon: Cloud, brand: "#5cc8ff" },
+  { x: 228, label: "Jira", Icon: ListChecks, brand: "#7c9bff" },
+];
+const V_SHEETS = { x: 328, label: "Your sheets", Icon: Sheet, brand: "#4ade80" };
+const V_OUT = [
+  { x: 70, label: "Suppliers", Icon: Truck, brand: "#7c9bff" },
+  { x: 190, label: "Manufacturing", Icon: Factory, brand: "#ffffff" },
+  { x: 310, label: "Compliance", Icon: ShieldCheck, brand: "#4ade80" },
+];
+const V_PATHS = [
+  // into the hub: SolidWorks, Onshape, Jira, sheets
+  "M 52 126 V 262 C 52 282 66 292 90 292 H 130",
+  "M 140 126 V 136 C 140 160 68 152 68 176 V 252 C 68 268 80 278 96 278 H 130",
+  "M 228 126 V 136 C 228 160 312 152 312 176 V 252 C 312 268 300 278 284 278 H 250",
+  "M 328 126 V 262 C 328 282 314 292 290 292 H 250",
+  // out to delivers: suppliers, manufacturing, compliance
+  "M 130 304 H 60 C 36 304 24 314 24 336 V 714 C 24 736 70 732 70 754 V 776",
+  "M 130 312 H 66 C 46 312 34 322 34 342 V 700 C 34 724 190 712 190 736 V 776",
+  "M 250 304 H 320 C 344 304 356 314 356 336 V 714 C 356 736 310 732 310 754 V 776",
+  // live changes down, checked fixes up
+  "M 170 336 V 462",
+  "M 210 462 V 336",
+];
+const vo: O = { cx: VX, cy: 430 };
+
 export default function SystemSlide() {
   const reveal = useReveal<HTMLDivElement>();
   const reveal2 = useReveal<HTMLDivElement>();
   const reduced = useReducedMotion();
   const planRef = useRef<HTMLDivElement>(null);
-  const onScreen = useOnScreen(planRef, "100px");
+  const onScreen = useOnScreen(planRef, "900px 0px");
   const [hot, setHot] = useState<PartId | null>(null);
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
   const pktRefs = useRef<(SVGGElement | null)[]>([]);
   const hubRef = useRef<SVGGElement>(null);
+  const [vertical, setVertical] = useState(false);
+
+  useEffect(() => {
+    const q = window.matchMedia("(max-width: 900px)");
+    const sync = () => setVertical(q.matches);
+    sync();
+    q.addEventListener("change", sync);
+    return () => q.removeEventListener("change", sync);
+  }, []);
 
   useEffect(() => {
     if (!onScreen || reduced) return;
@@ -121,14 +168,23 @@ export default function SystemSlide() {
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [onScreen, reduced]);
+  }, [onScreen, reduced, vertical]);
 
   const partAttrs = (id: PartId) => ({
     className: "ops-part",
     "data-hot": hot === id ? "" : undefined,
-    "data-dim": hot && hot !== id ? "" : undefined,
-    onPointerEnter: () => setHot(id),
-    onPointerLeave: () => setHot((h) => (h === id ? null : h)),
+    // phones: a tapped part lights up, but nothing else greys out (it read as broken text)
+    "data-dim": hot && hot !== id && !vertical ? "" : undefined,
+    // mouse: hover; touch and pen: tap to select, tap again to clear
+    onPointerEnter: (e: React.PointerEvent) => {
+      if (e.pointerType === "mouse") setHot(id);
+    },
+    onPointerLeave: (e: React.PointerEvent) => {
+      if (e.pointerType === "mouse") setHot((h) => (h === id ? null : h));
+    },
+    onPointerUp: (e: React.PointerEvent) => {
+      if (e.pointerType !== "mouse") setHot((h) => (h === id ? null : id));
+    },
   });
   const traceOn = (i: number) => (hot && PART_TRACES[hot].includes(i) ? "" : undefined);
 
@@ -151,7 +207,161 @@ export default function SystemSlide() {
             <span>System</span>
           </div>
           <div className="ops-figStage ops-mapStage">
-            <div className="ops-plan" ref={planRef}>
+            <div className="ops-plan" ref={planRef} data-vertical={vertical ? "" : undefined}>
+              {vertical ? (
+                <svg
+                  viewBox={`0 0 ${VW} ${VH}`}
+                  role="img"
+                  aria-label="How OpenPlan fits, top to bottom. The tools your team uses, such as SolidWorks, Onshape and Jira, and the spreadsheets you keep feed OpenPlan, which holds requirements, the BOM and the program. OpenPlan sends live changes down to the AI Architect, which finds the risk and sends checked fixes back up. OpenPlan then hands clean work to suppliers, manufacturing and compliance."
+                  style={{ overflow: "visible", width: "100%", height: "auto" }}
+                  fill="none"
+                  stroke="var(--iso-ink)"
+                  strokeWidth={1}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                >
+                  <defs>
+                    <radialGradient id="ops-vm-g" cx="50%" cy="50%" r="60%">
+                      <stop offset="0" stopColor="#fff" />
+                      <stop offset="0.6" stopColor="#fff" stopOpacity="0.55" />
+                      <stop offset="1" stopColor="#fff" stopOpacity="0" />
+                    </radialGradient>
+                    <mask id="ops-vm-m" maskUnits="userSpaceOnUse" x="0" y="0" width={VW} height={VH}>
+                      <rect width={VW} height={VH} fill="url(#ops-vm-g)" />
+                    </mask>
+                  </defs>
+                  <g mask="url(#ops-vm-m)">
+                    <path d={gridPath(720, 24)} transform={topM(vo)} className="ops-mfloor" stroke="var(--iso-grid)" vectorEffect="non-scaling-stroke" />
+                  </g>
+
+                  {V_PATHS.map((d, i) => (
+                    <path
+                      key={i}
+                      ref={(el) => {
+                        pathRefs.current[i] = el;
+                      }}
+                      d={d}
+                      className={i >= 7 ? "ops-lane" : "ops-trace"}
+                      data-on={traceOn(i)}
+                    />
+                  ))}
+                  <path d="M 165 446 l 5 6 l 5 -6 M 205 348 l 5 -6 l 5 6" className="ops-arrow" />
+                  <text x={160} y={404} textAnchor="end" className="ops-head">
+                    LIVE CHANGES
+                  </text>
+                  <text x={220} y={404} className="ops-head">
+                    CHECKED FIXES
+                  </text>
+
+                  {/* tools you use */}
+                  <g {...partAttrs("tools")}>
+                    <rect x={4} y={4} width={268} height={124} className="ops-hit" />
+                    <text x={0} y={20} className="ops-head">
+                      TOOLS YOU USE
+                    </text>
+                    {V_TOOLS.map((t) => (
+                      <g key={t.label}>
+                        <text x={t.x} y={50} textAnchor="middle" className="ops-name">
+                          {t.label}
+                        </text>
+                        <Tile own sx={t.x} sy={100} h={10} Icon={t.Icon} brand={t.brand} />
+                      </g>
+                    ))}
+                  </g>
+
+                  {/* sheets you keep */}
+                  <g {...partAttrs("sheets")}>
+                    <rect x={276} y={4} width={100} height={124} className="ops-hit" />
+                    <text x={VW} y={20} textAnchor="end" className="ops-head">
+                      SHEETS YOU KEEP
+                    </text>
+                    <text x={V_SHEETS.x} y={50} textAnchor="middle" className="ops-name">
+                      {V_SHEETS.label}
+                    </text>
+                    <Tile own sx={V_SHEETS.x} sy={100} h={10} Icon={V_SHEETS.Icon} brand={V_SHEETS.brand} />
+                  </g>
+
+                  {/* OpenPlan hub */}
+                  <g {...partAttrs("hub")} ref={hubRef}>
+                    <rect x={80} y={176} width={220} height={176} className="ops-hit" />
+                    <text x={VX} y={196} textAnchor="middle" className="ops-title">
+                      OpenPlan
+                    </text>
+                    <text x={VX} y={218} textAnchor="middle" className="ops-fn" style={{ letterSpacing: "0.05em" }}>
+                      REQUIREMENTS · BOM · PROGRAM
+                    </text>
+                    <Slab o={{ cx: VX, cy: V_HUB }} x={-56} y={-56} w={112} d={112} r={10} h={7} topFill="var(--top)">
+                      <path
+                        d={[-22, -11, 0, 11, 22]
+                          .map((k) => `M ${k} 42 v 5 M ${k} -42 v -5 M 42 ${k} h 5 M -42 ${k} h -5`)
+                          .join(" ")}
+                        className="ops-pins"
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </Slab>
+                    <Slab o={{ cx: VX, cy: V_HUB }} x={-38} y={-38} w={76} d={76} r={7} z={7} h={12} topFill="var(--top)">
+                      <path d={MARK_D} className="ops-hubmark" stroke="none" transform={`translate(-20 -20) scale(${hubMark})`} />
+                    </Slab>
+                  </g>
+
+                  {/* AI Architect */}
+                  <g {...partAttrs("cloud")}>
+                    <rect x={70} y={440} width={240} height={226} className="ops-hit" />
+                    <Slab o={{ cx: VX, cy: V_AI }} x={-58} y={-58} w={116} d={116} r={12} h={10} topFill="var(--top)">
+                      <rect x={-49} y={-49} width={98} height={98} rx={6} className="ops-pins" vectorEffect="non-scaling-stroke" />
+                      {[58, 40, 66, 34, 50].map((len, i) => (
+                        <g key={i}>
+                          <rect x={-40} y={-33 + i * 15} width={6} height={6} rx={1} className={i % 2 ? "ops-box" : "ops-boxOn"} vectorEffect="non-scaling-stroke" />
+                          <path d={`M -28 ${-30 + i * 15} h ${len}`} className="ops-row" vectorEffect="non-scaling-stroke" />
+                        </g>
+                      ))}
+                    </Slab>
+                    <circle cx={132} cy={600} r={4} className="ops-live" stroke="none" />
+                    <text x={198} y={606} textAnchor="middle" className="ops-title">
+                      AI Architect
+                    </text>
+                    <text x={VX} y={630} textAnchor="middle" className="ops-fn">
+                      FINDS RISK LIVE
+                    </text>
+                    <text x={VX} y={648} textAnchor="middle" className="ops-fn">
+                      CHECKS EACH CHANGE
+                    </text>
+                    <text x={VX} y={666} textAnchor="middle" className="ops-fn">
+                      PROVES READINESS
+                    </text>
+                  </g>
+
+                  {/* delivers to */}
+                  <g {...partAttrs("out")}>
+                    <rect x={4} y={680} width={372} height={180} className="ops-hit" />
+                    <text x={VX} y={696} textAnchor="middle" className="ops-head">
+                      DELIVERS TO
+                    </text>
+                    {V_OUT.map((t) => (
+                      <g key={t.label}>
+                        <Tile own sx={t.x} sy={800} h={16} Icon={t.Icon} brand={t.brand} />
+                        <text x={t.x} y={846} textAnchor="middle" className="ops-name">
+                          {t.label}
+                        </text>
+                      </g>
+                    ))}
+                  </g>
+
+                  {PKTS.map((k, i) => (
+                    <g
+                      key={i}
+                      ref={(el) => {
+                        pktRefs.current[i] = el;
+                      }}
+                      className={k.fix ? "ops-fix" : "ops-pkt"}
+                      opacity={0}
+                      pointerEvents="none"
+                    >
+                      <path d={CUBE} vectorEffect="non-scaling-stroke" />
+                    </g>
+                  ))}
+                </svg>
+              ) : (
               <svg
                 viewBox={`0 0 ${W} ${H}`}
                 role="img"
@@ -318,9 +528,10 @@ export default function SystemSlide() {
                   </g>
                 ))}
               </svg>
+              )}
             </div>
 
-            {/* phones: the same map as a schematic */}
+            {/* text schematic (kept, not shown; phones get the vertical map) */}
             <div className="ops-schem">
               <div className="ops-node">
                 <p className="ops-nodeHead">Tools you use</p>
@@ -353,7 +564,7 @@ export default function SystemSlide() {
             </div>
           </div>
           <figcaption className="ops-figFoot">
-            <span>Hover a part</span>
+            <span>Hover or tap a part</span>
             <span>illustrative</span>
           </figcaption>
         </figure>
