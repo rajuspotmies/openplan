@@ -4,7 +4,10 @@ import { useEffect, Suspense, lazy } from "react";
 import { useLocation } from "@/lib/router";
 import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
+import PartsShelfField from "@/components/hero/PartsShelfField";
 import BlueAsciiField from "@/components/hero/BlueAsciiField";
+import BlueprintField from "@/components/hero/BlueprintField";
+import { HERO_DESIGN } from "@/components/hero/heroDesign";
 import PanelReveal, { PanelClip } from "@/components/motion/PanelReveal";
 import TrustedBy from "@/components/TrustedBy";
 
@@ -82,7 +85,15 @@ const Index = () => {
       <Navigation />
       {/* Hero → panel that opens over the pinned hero background: "How to get started" comes second */}
       <PanelReveal
-        background={<BlueAsciiField className="absolute inset-0 h-full w-full" />}
+        background={
+          HERO_DESIGN === "shelf" ? (
+            <PartsShelfField className="absolute inset-0 h-full w-full" />
+          ) : HERO_DESIGN === "blueprint" ? (
+            <BlueprintField className="absolute inset-0 h-full w-full" />
+          ) : (
+            <BlueAsciiField className="absolute inset-0 h-full w-full" />
+          )
+        }
         hero={<Hero background={false} />}
         clip={false}
       >

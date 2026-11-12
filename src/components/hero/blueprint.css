@@ -1,0 +1,114 @@
+.bp {
+  --bp-bg: #0a0a0b;
+  --bp-blue: 47 91 255;
+  --bp-horizon: 89%; /* where the arc's crest sits, from the top */
+  position: relative;
+  overflow: hidden;
+  background: var(--bp-bg);
+  isolation: isolate;
+}
+
+/* drafting grid, strongest just above the horizon, gone at the top and sides */
+.bp-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.07) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center top;
+  -webkit-mask-image: radial-gradient(70% 70% at 50% var(--bp-horizon), #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 80%);
+  mask-image: radial-gradient(70% 70% at 50% var(--bp-horizon), #000 0%, rgb(0 0 0 / 0.5) 45%, transparent 80%);
+}
+
+/* a faint light falling from the top centre */
+.bp-beam {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(40% 55% at 50% -10%, rgb(var(--bp-blue) / 0.22), transparent 70%);
+}
+
+/* the glow that sits on the horizon */
+.bp-bloom {
+  position: absolute;
+  left: 50%;
+  top: var(--bp-horizon);
+  width: min(1700px, 130vw);
+  height: 760px;
+  transform: translate(-50%, -64%);
+  background: radial-gradient(50% 50% at 50% 64%, rgb(var(--bp-blue) / 0.6), rgb(var(--bp-blue) / 0.16) 50%, transparent 75%);
+  filter: blur(8px);
+  animation: bp-breathe 7s ease-in-out infinite;
+}
+
+/* the planet: a huge near-black disc whose rim is the lit horizon */
+.bp-planet {
+  position: absolute;
+  left: 50%;
+  top: var(--bp-horizon);
+  width: max(1500px, 120vw);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  border-radius: 50% !important; /* the site squares every corner (globals.css) */
+  background: var(--bp-bg);
+  box-shadow:
+    0 0 0 1px rgb(150 175 255 / 0.75),
+    0 -1px 6px rgb(190 205 255 / 0.9),
+    0 -6px 30px rgb(var(--bp-blue) / 0.95),
+    0 -30px 120px rgb(var(--bp-blue) / 0.55),
+    inset 0 18px 60px rgb(var(--bp-blue) / 0.18);
+}
+
+/* railed frame, aligned with the sections below */
+.bp-frame {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: min(1600px, calc(100% - 2 * clamp(12px, 2.4vw, 36px)));
+  transform: translateX(-50%);
+  border-inline: 1px solid rgb(255 255 255 / 0.08);
+}
+.bp-cross {
+  position: absolute;
+  top: calc(var(--bp-horizon) - 4px);
+  width: 9px;
+  height: 9px;
+}
+.bp-cross::before,
+.bp-cross::after {
+  content: "";
+  position: absolute;
+  background: rgb(255 255 255 / 0.4);
+}
+.bp-cross::before { left: 4px; top: 0; width: 1px; height: 9px; }
+.bp-cross::after { top: 4px; left: 0; height: 1px; width: 9px; }
+.bp-cross-l { left: -5px; }
+.bp-cross-r { right: -5px; }
+.bp-tag {
+  position: absolute;
+  top: 96px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: rgb(255 255 255 / 0.3);
+}
+.bp-tag-l { left: clamp(16px, 2vw, 28px); }
+.bp-tag-r { right: clamp(16px, 2vw, 28px); }
+
+@keyframes bp-breathe {
+  0%, 100% { opacity: 0.85; }
+  50% { opacity: 1; }
+}
+[data-paused] .bp-bloom { animation-play-state: paused; }
+
+@media (max-width: 767px) {
+  .bp { --bp-horizon: 84%; }
+  .bp-grid { background-size: 40px 40px; }
+  .bp-planet { width: 200vw; }
+  .bp-bloom { height: 520px; }
+  .bp-tag { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bp-bloom { animation: none; }
+}

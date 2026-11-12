@@ -1,0 +1,70 @@
+/* ShelfGlow hero background (PartsShelfField + shelfGlow.ts). */
+.shelf-glow {
+  position: relative;
+  overflow: hidden;
+  background: #151516;
+}
+.shelf-glow canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+.shelf-glow .sg-base {
+  opacity: 0;
+  transition: opacity 1.6s ease;
+}
+.shelf-glow.is-ready .sg-base {
+  opacity: 1;
+}
+.shelf-glow .sg-light {
+  position: absolute;
+  inset: 0;
+  mix-blend-mode: screen;
+  isolation: isolate;
+  pointer-events: none;
+}
+.shelf-glow canvas.sg-aura,
+.shelf-glow canvas.sg-cue {
+  inset: auto;
+  top: 0;
+  left: 0;
+}
+.shelf-glow canvas.sg-aura {
+  opacity: 0;
+  mix-blend-mode: plus-lighter;
+  will-change: transform, opacity;
+}
+.shelf-glow canvas.sg-cue {
+  width: 0;
+  height: 0;
+  opacity: 0;
+  z-index: 3;
+  will-change: transform, opacity;
+}
+/* vignette, plus a cool gray bloom top-right */
+.shelf-glow::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(42% 38% at 90% 4%, rgba(47, 91, 255, 0.16), rgba(47, 91, 255, 0) 72%),
+    radial-gradient(120% 95% at 50% 42%, rgba(21, 21, 22, 0) 55%, rgba(21, 21, 22, 0.9) 100%);
+}
+
+/* HeroShelf foreground */
+.hero-accent {
+  color: #4f7bff; /* the brand blue, lifted for the dark ground (Theseus colours this line in its accent) */
+  text-shadow: 0 0 28px rgba(47, 91, 255, 0.35);
+}
+/* copy stays legible over the light (Theseus: a shadow the colour of the page) */
+.hero-copy-shadow {
+  text-shadow: 0 3px 12px #151516, 0 2px 4px #151516;
+}
+/* no page-coloured shadow on light buttons */
+.hero-copy-shadow .bg-white {
+  text-shadow: none;
+}

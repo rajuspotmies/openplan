@@ -238,6 +238,7 @@ export default function StackSlide() {
                   key={k}
                   className="ops-layer"
                   data-hot={hot === k ? "" : undefined}
+                  data-veil={hot !== null && k > hot ? "" : undefined}
                   onPointerEnter={() => setHot(k)}
                   onPointerLeave={() => setHot((h) => (h === k ? null : h))}
                 >

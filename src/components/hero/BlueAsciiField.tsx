@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { HERO_TINT, HERO_TINTS } from "./heroDesign";
 
 /*
  * Blue ASCII "horizon" for the hero (Canvas 2D, no WebGL).
@@ -36,7 +37,11 @@ const encode = (c: number) => {
   c = Math.min(1, Math.max(0, c));
   return c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055;
 };
-const BLUE_G = toLinear(0x47 / 255);
+const TINT = HERO_TINTS[HERO_TINT];
+// the sky colour in linear light, scaled by the preset's brightness
+const SKY_R = toLinear(TINT.sky[0] / 255) * TINT.gain;
+const SKY_G = toLinear(TINT.sky[1] / 255) * TINT.gain;
+const SKY_B = toLinear(TINT.sky[2] / 255) * TINT.gain;
 // encode() is two pow() calls per cell per frame; a table is visually identical
 const ENC_N = 4096;
 const ENC_LUT = new Float32Array(ENC_N + 1).map((_, i) => encode(i / ENC_N));
@@ -136,7 +141,7 @@ export default function BlueAsciiField({ className = "" }: { className?: string 
       atlasCtx.font = `300 ${Math.round(14 * dpr)}px ${mono ? `${mono}, ` : ""}ui-monospace, SFMono-Regular, Menlo, Consolas, monospace`;
       atlasCtx.textAlign = "center";
       atlasCtx.textBaseline = "middle";
-      atlasCtx.fillStyle = "rgb(10, 70, 255)";
+      atlasCtx.fillStyle = `rgb(${TINT.glyph.join(", ")})`;
       [...GLYPHS].forEach((g, i) => atlasCtx.fillText(g, i * cw + cw / 2, ch * 0.53));
     };
 
@@ -205,9 +210,9 @@ export default function BlueAsciiField({ className = "" }: { className?: string 
       const lin = x1 + (x2 - x1) * z; // amount of blue (linear)
       const a = (smoothstep(0, 0.38, t1) * (1 - z) + smoothstep(0, 0.38, t2) * z) * reveal;
 
-      out.r = 0;
-      out.g = enc(lin * BLUE_G) * a;
-      out.b = enc(lin) * a;
+      out.r = enc(lin * SKY_R) * a;
+      out.g = enc(lin * SKY_G) * a;
+      out.b = enc(lin * SKY_B) * a;
       out.a = a;
       out.value = smoothstep(0.3, 1, t1 + (t2 - t1) * z);
       out.order = order;
@@ -298,7 +303,7 @@ export default function BlueAsciiField({ className = "" }: { className?: string 
           const present = pick[i] <= DENSITY * (0.45 + 0.55 * (0.3 + tone * 1.1));
           if (!present) continue;
           const cutoff = smoothstep(0.03, 0.1, value);
-          const alpha = OPACITY * cutoff * (0.45 + 0.55 * (0.35 + 0.65 * lv));
+          const alpha = Math.min(1, OPACITY * (TINT.ink ?? 1) * cutoff * (0.45 + 0.55 * (0.35 + 0.65 * lv)));
           // glyph light ≈ 55% of the field colour under it
           const light = (f.b * 0.55 + 0.03 * f.a) * alpha;
           if (light < 0.01) continue;
