@@ -1,0 +1,41 @@
+/* Industry figures: the bench look plus rotor discs and screen strokes. */
+.ind.iso[data-theme="dark"] {
+  --anatomy-lit: #7c9bff;
+  --anatomy-lit-top: #1a2240;
+  --anatomy-lit-shade: #141a30;
+  --anatomy-card: #0e0e10;
+  --anatomy-page: #0e0e10;
+  font-family: inherit;
+}
+
+.ind .rotor {
+  fill: rgba(47, 91, 255, 0.07);
+  stroke: rgba(47, 91, 255, 0.35);
+  stroke-width: 0.6;
+}
+.ind .sc-line {
+  fill: none;
+  stroke: #7c9bff;
+  stroke-width: 0.9;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.ind .sc-dim {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.35);
+  stroke-width: 0.8;
+  stroke-linecap: round;
+}
+.ind .bn-ink {
+  fill: #18181c;
+}
+
+/* hairline figures on capability cards: the plate follows the card's hover tint */
+.hl-plate {
+  --hairline-plate: #ffffff;
+  --hairline-hi: #0a0a0b;
+  transition: background-color 0.5s ease-out;
+}
+.group:hover .hl-plate {
+  --hairline-plate: #fafafb;
+}

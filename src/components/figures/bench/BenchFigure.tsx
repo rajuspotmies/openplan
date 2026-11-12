@@ -12,7 +12,7 @@ import "./bench.css";
 
 /* ── static art ───────────────────────────────────────────────────────────── */
 
-function Items({ items, uid }: { items: Item[]; uid: string }) {
+export function Items({ items, uid }: { items: Item[]; uid: string }) {
   return (
     <>
       {items.map((it, k) => {
@@ -65,7 +65,7 @@ function Items({ items, uid }: { items: Item[]; uid: string }) {
   );
 }
 
-const MAT = (
+export const MAT = (
   <g>
     <path className="iso-halo" d={MAT_ART.halo} />
     {MAT_ART.feet.map((parts, i) => (
@@ -99,11 +99,11 @@ const SceneArt = React.memo(function SceneArt({ scene, i }: { scene: Scene; i: n
 
 /* ── motion ──────────────────────────────────────────────────────────────── */
 
-const curve = (f: number, e: Ease = "io") =>
+export const curve = (f: number, e: Ease = "io") =>
   e === "step" ? 1 : e === "i" ? f * f : e === "o" ? 1 - (1 - f) * (1 - f) : f < 0.5 ? 4 * f * f * f : 1 - Math.pow(-2 * f + 2, 3) / 2;
 
 /** fill in missing positions and opacities from the key before */
-function normalise(keys: Key[]) {
+export function normalise(keys: Key[]) {
   let p: Point3 = [0, 0, 0];
   let o = 1;
   return keys.map((k) => {
@@ -113,7 +113,7 @@ function normalise(keys: Key[]) {
   });
 }
 
-function sample(keys: ReturnType<typeof normalise>, u: number) {
+export function sample(keys: ReturnType<typeof normalise>, u: number) {
   let k = 0;
   while (k < keys.length - 2 && keys[k + 1].t <= u) k++;
   const a = keys[k];
@@ -126,13 +126,13 @@ function sample(keys: ReturnType<typeof normalise>, u: number) {
   };
 }
 
-type Prepared =
+export type Prepared =
   | { kind: "move"; id: string; keys: ReturnType<typeof normalise> }
   | Extract<Channel, { kind: "lit" }>;
 
 const PREPARED: Prepared[][] = SCENES.map((s) => s.channels.map((c) => (c.kind === "move" ? { kind: "move", id: c.id, keys: normalise(c.keys) } : c)));
 
-function apply(root: SVGGElement, channels: Prepared[], u: number) {
+export function apply(root: SVGGElement, channels: Prepared[], u: number) {
   for (const c of channels) {
     if (c.kind === "move") {
       const el = root.querySelector<SVGGElement>(`[data-id="${c.id}"]`);

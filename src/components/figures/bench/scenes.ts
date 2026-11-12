@@ -37,29 +37,29 @@ export type Item =
 
 type SolidOpts = { crease?: Tone | "none"; lit?: boolean; lk?: boolean; flat?: boolean; inner?: string };
 
-const S = (paths: SolidPaths, tone: Tone = "mid", o: SolidOpts = {}): Item => ({ t: "solid", paths, tone, ...o });
-const L = (d: string, tone: Tone | "lit" = "lo", o: { free?: boolean; dashed?: boolean } = {}): Item => ({ t: "line", d, tone, ...o });
-const D = (points: Point3[], size = 0.45, tone?: Tone): Item => ({ t: "dots", points, size, tone });
-const G = (items: Item[], o: { id?: string; clip?: string } = {}): Item => ({ t: "g", items, ...o });
-const F = (d: string, cls: string): Item => ({ t: "path", d, cls });
+export const S = (paths: SolidPaths, tone: Tone = "mid", o: SolidOpts = {}): Item => ({ t: "solid", paths, tone, ...o });
+export const L = (d: string, tone: Tone | "lit" = "lo", o: { free?: boolean; dashed?: boolean } = {}): Item => ({ t: "line", d, tone, ...o });
+export const D = (points: Point3[], size = 0.45, tone?: Tone): Item => ({ t: "dots", points, size, tone });
+export const G = (items: Item[], o: { id?: string; clip?: string } = {}): Item => ({ t: "g", items, ...o });
+export const F = (d: string, cls: string): Item => ({ t: "path", d, cls });
 
-const box = (x: number, y: number, w: number, d: number, z: number, h: number, r = 0.8, steps = 4, bevel = 0) =>
+export const box = (x: number, y: number, w: number, d: number, z: number, h: number, r = 0.8, steps = 4, bevel = 0) =>
   slabOf({ x, y, w, d, r }, z, h, P, steps, bevel);
-const cyl = (cx: number, cy: number, r: number, z: number, h: number, steps = 24) => cylinder(cx, cy, r, z, h, P, steps);
-const poly = (pts: Point3[], closed = true) => pathOf(pts.map(at), closed);
-const join = (paths: string[]) => paths.filter(Boolean).join("");
-const halo = (plan: Plan, h = 6) => F(haloOf(plan, 0, h, P), "iso-halo");
-const depth = (p: Point3) => depthOf(p, P);
+export const cyl = (cx: number, cy: number, r: number, z: number, h: number, steps = 24) => cylinder(cx, cy, r, z, h, P, steps);
+export const poly = (pts: Point3[], closed = true) => pathOf(pts.map(at), closed);
+export const join = (paths: string[]) => paths.filter(Boolean).join("");
+export const halo = (plan: Plan, h = 6) => F(haloOf(plan, 0, h, P), "iso-halo");
+export const depth = (p: Point3) => depthOf(p, P);
 
 /** a rule on the front (y) plane */
-const frontRule = (x0: number, x1: number, y: number, z: number) => poly([[x0, y, z], [x1, y, z]], false);
+export const frontRule = (x0: number, x1: number, y: number, z: number) => poly([[x0, y, z], [x1, y, z]], false);
 /** a rectangle on the front (y) plane */
-const frontRect = (x0: number, x1: number, y: number, z0: number, z1: number) =>
+export const frontRect = (x0: number, x1: number, y: number, z0: number, z1: number) =>
   poly([[x0, y, z0], [x1, y, z0], [x1, y, z1], [x0, y, z1]]);
 /** a rule on the top plane */
-const topRule = (x0: number, y0: number, x1: number, y1: number, z: number) => lineOnTop([x0, y0], [x1, y1], z, P);
+export const topRule = (x0: number, y0: number, x1: number, y1: number, z: number) => lineOnTop([x0, y0], [x1, y1], z, P);
 /** a stadium slot on a vertical x-plane */
-function slotX(x: number, y0: number, y1: number, zc: number, r: number, steps = 8) {
+export function slotX(x: number, y0: number, y1: number, zc: number, r: number, steps = 8) {
   const pts: Point3[] = [];
   for (let s = 0; s <= steps; s++) {
     const a = Math.PI / 2 + (s / steps) * Math.PI;
@@ -71,13 +71,13 @@ function slotX(x: number, y0: number, y1: number, zc: number, r: number, steps =
   }
   return poly(pts);
 }
-const plateScrews = (p: Plan, z: number, inset = 3): Point3[] => [
+export const plateScrews = (p: Plan, z: number, inset = 3): Point3[] => [
   [p.x + inset, p.y + inset, z],
   [p.x + p.w - inset, p.y + inset, z],
   [p.x + inset, p.y + p.d - inset, z],
   [p.x + p.w - inset, p.y + p.d - inset, z],
 ];
-const byDepth = (groups: { at: Point3; items: Item[] }[]) =>
+export const byDepth = (groups: { at: Point3; items: Item[] }[]) =>
   [...groups].sort((a, b) => depth(a.at) - depth(b.at)).flatMap((g) => g.items);
 
 /* ── motion ──────────────────────────────────────────────────────────────── */
@@ -103,7 +103,7 @@ export interface Scene {
 }
 
 /** keys that walk a part through `stops`, holding at each, then fade out, jump home and fade in */
-function tour(stops: Point3[], { hold = 0.6, travel = 0.4, fade = 0.25 }: { hold?: number; travel?: number; fade?: number } = {}) {
+export function tour(stops: Point3[], { hold = 0.6, travel = 0.4, fade = 0.25 }: { hold?: number; travel?: number; fade?: number } = {}) {
   const span = stops.length * hold + (stops.length - 1) * travel + fade * 2;
   const keys: Key[] = [{ t: 0, p: stops[0], o: 1 }];
   let now = 0;
@@ -133,7 +133,7 @@ function tour(stops: Point3[], { hold = 0.6, travel = 0.4, fade = 0.25 }: { hold
 
 /* ── shared parts ────────────────────────────────────────────────────────── */
 
-function labelPlateFront(x: number, y: number, z: number, w: number, h: number): Item[] {
+export function labelPlateFront(x: number, y: number, z: number, w: number, h: number): Item[] {
   return [
     S(box(x, y, w, 0.7, z, h, 0.3, 2), "lo", { crease: "none" }),
     L(frontRule(x + 3, x + w * 0.62, y + 0.7, z + h * 0.62), "lo", { free: true }),
