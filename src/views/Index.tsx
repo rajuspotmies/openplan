@@ -6,6 +6,7 @@ import Navigation from "@/components/Navigation";
 import Hero from "@/components/Hero";
 import BlueAsciiField from "@/components/hero/BlueAsciiField";
 import PanelReveal, { PanelClip } from "@/components/motion/PanelReveal";
+import TrustedBy from "@/components/TrustedBy";
 
 // Lazy load below-the-fold components for faster initial load
 const DemoVideo = lazy(() => import("@/components/DemoVideo"));
@@ -79,19 +80,21 @@ const Index = () => {
   return (
     <div className="min-h-screen" style={{ backgroundColor: '#0A0A0B' }}>
       <Navigation />
-      {/* Hero → light panel that opens over the pinned hero background and closes onto the video section */}
+      {/* Hero → panel that opens over the pinned hero background: "How to get started" comes second */}
       <PanelReveal
         background={<BlueAsciiField className="absolute inset-0 h-full w-full" />}
         hero={<Hero background={false} />}
+        clip={false}
       >
-        <Suspense fallback={<div className="h-screen bg-white" />}>
-          <ScrollLifecycleSection />
+        <Suspense fallback={<div className="h-screen bg-[#0A0A0B]" />}>
+          <TrustedBy />
+          <GetStarted />
         </Suspense>
       </PanelReveal>
       <Suspense fallback={null}>
         <DemoVideo />
+        <ScrollLifecycleSection />
         <OpenPlanSlides />
-        <GetStarted />
         <PanelClip className="bg-white">
           <Features />
           <Industries />

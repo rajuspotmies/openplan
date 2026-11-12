@@ -3,6 +3,7 @@
 // Industries as a ruled sheet of four columns inside the page's railed frame, in the same
 // vocabulary as Pricing: mono labels, hairlines, square corners and the house blue as accent.
 import { Cpu, Plane, Zap, Factory, ArrowUpRight } from "lucide-react";
+import Link from "next/link";
 import { useNavigate } from "@/lib/router";
 import BlurReveal, { BlurWords } from "@/components/motion/BlurReveal";
 
@@ -10,6 +11,7 @@ const industries = [
   {
     icon: Cpu,
     name: "Consumer Electronics & IoT",
+    href: "/industries/consumer-electronics",
     description:
       "Ship smart devices faster: coordinate hardware, firmware and manufacturing across distributed teams with AI-driven planning and BOM-aware schedules.",
     stats: "For teams of 10–100 engineers",
@@ -17,6 +19,7 @@ const industries = [
   {
     icon: Plane,
     name: "Robotics & Drones",
+    href: "/industries/drone",
     description:
       "Coordinate complex mechanical, electrical and firmware workflows from prototype to production, without losing track of dependencies across teams.",
     stats: "For drones & robotics",
@@ -24,6 +27,7 @@ const industries = [
   {
     icon: Zap,
     name: "EV & Clean Energy Hardware",
+    href: "/industries/automotive",
     description:
       "Move EV charging infrastructure, battery systems and clean energy hardware from concept to mass production with traceable BOMs and supplier coordination.",
     stats: "For EV infra & battery startups",
@@ -31,6 +35,7 @@ const industries = [
   {
     icon: Factory,
     name: "Industrial Equipment",
+    href: "/industries/industrial-equipment",
     description:
       "Build connected industrial hardware, from smart factory equipment to specialised machinery, with end-to-end traceability from design to shop floor.",
     stats: "For industrial hardware teams",
@@ -84,9 +89,11 @@ const Industries = () => {
               {industries.map((industry, i) => {
                 const Icon = industry.icon;
                 return (
-                  <article
+                  <Link
                     key={industry.name}
-                    className={`group relative flex flex-col border-b border-black/[0.1] bg-white transition-colors duration-500 ease-out hover:bg-[#FAFAFB] ${
+                    href={industry.href}
+                    aria-label={`${industry.name}: see how OpenPlan works for this industry`}
+                    className={`group relative flex flex-col focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-brand/50 border-b border-black/[0.1] bg-white transition-colors duration-500 ease-out hover:bg-[#FAFAFB] ${
                       i % 2 === 1 ? "sm:border-l" : ""
                     } ${i > 0 ? "lg:border-l" : ""}`}
                   >
@@ -109,7 +116,7 @@ const Industries = () => {
                         {industry.stats}
                       </p>
                     </div>
-                  </article>
+                  </Link>
                 );
               })}
             </div>

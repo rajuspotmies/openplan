@@ -668,5 +668,123 @@ function electronics(): IndScene {
   };
 }
 
-export const INDUSTRY_SCENES = { drone, medtech, automotive, electronics } as const;
+/* ── Industrial equipment: a press cell on a conveyor ────────────────────── */
+
+function industrial(): IndScene {
+  const BZ = 22; // belt top
+  const items: Item[] = [];
+
+  // control cabinet, back left
+  const CAB: Plan = { x: -96, y: -50, w: 30, d: 22, r: 1 };
+  items.push(
+    halo(CAB, 4),
+    G(
+      [
+        S(box(CAB.x, CAB.y, CAB.w, CAB.d, 0, 58, 1, 4, 0.6), "mid", { lk: true }),
+        L(frontRect(-93, -69, -28, 6, 52), "faint"),
+        L(frontRule(-93, -69, -28, 30), "faint"),
+        F(frontRect(-90, -76, -28, 38, 48), "bn-ink"),
+        D([[-72, -28, 44], [-72, -28, 40], [-72, -28, 36]], 0.6),
+        L(join([-88, -84, -80, -76].map((x) => poly([[x, -28, 12], [x, -28, 24]], false))), "lo"),
+      ],
+      { id: "plc" },
+    ),
+  );
+
+  // press: column behind the belt, arm over it
+  items.push(
+    halo({ x: -18, y: -34, w: 22, d: 14, r: 1 }, 4),
+    S(box(-18, -34, 22, 14, 0, 70, 1, 4, 0.6), "mid"),
+    L(frontRule(-15, 1, -20, 20), "faint"),
+    L(frontRule(-15, 1, -20, 50), "faint"),
+  );
+  // inspection post, behind the belt
+  items.push(S(box(38, -26, 8, 8, 0, 56, 1, 4, 0.4), "mid"));
+
+  // conveyor legs, then the belt
+  for (const x of [-60, -24, 26, 76]) {
+    for (const y of [-10, 6]) items.push(S(box(x, y, 4, 4, 0, BZ - 4, 0.4, 2), "lo"));
+  }
+  items.push(
+    halo({ x: -64, y: -11, w: 152, d: 22, r: 2 }, 3),
+    S(box(-64, -11, 152, 22, BZ - 4, 4, 1.6, 4, 0.4), "mid"),
+    L(join(Array.from({ length: 19 }, (_, k) => topRule(-60 + k * 8, -9, -60 + k * 8, 9, BZ))), "faint"),
+    S(box(-64, -13, 152, 2, BZ - 4, 6, 0.4, 2), "lo"),
+  );
+
+  // the workpiece riding the belt
+  const stops: Point3[] = [[-50, 0, BZ], [-7, 0, BZ], [42, 0, BZ], [78, 0, BZ]];
+  const { keys, arrivals } = tour(stops, { hold: 0.8, travel: 0.7, fade: 0.25 });
+  items.push(
+    G(
+      [
+        S(box(-6, -6, 12, 12, 0, 6, 1, 4, 0.4), "hi", { lit: true }),
+        S(cyl(0, 0, 2.4, 6, 1.4, 14), "mid"),
+      ],
+      { id: "q" },
+    ),
+  );
+
+  // press arm and ram
+  const hit = arrivals[1];
+  items.push(
+    S(box(-18, -20, 22, 30, 62, 10, 1, 4, 0.6), "mid"),
+    L(topRule(-15, -16, -15, 6, 72), "faint"),
+    G(
+      [
+        G([S(cyl(-7, 0, 5, 36, 26, 24), "mid", { lk: true })], { id: "ram" }),
+        S(cyl(-7, 0, 7, 32, 4, 24), "lo"),
+      ],
+      { id: "rammv" },
+    ),
+  );
+  // inspection arm and sensor head
+  items.push(
+    S(box(38, -26, 8, 30, 50, 6, 1, 4, 0.4), "mid"),
+    G([S(box(37, -5, 10, 10, 40, 10, 1, 4, 0.4), "mid", { lk: true }), D([[42, 5, 43]], 0.7)], { id: "sensor" }),
+    L(poly([[42, 0, 40], [42, 0, BZ + 7]], false), "lo", { dashed: true }),
+  );
+  // front belt rail and label
+  items.push(S(box(-64, 11, 152, 2, BZ - 4, 6, 0.4, 2), "lo"), ...labelPlateFront(-40, 13, BZ - 3, 18, 4));
+
+  // finished parts on a pallet, front right
+  const PAL: Plan = { x: 50, y: 22, w: 40, d: 28, r: 1 };
+  const out: Item[] = [S(box(PAL.x, PAL.y, PAL.w, PAL.d, 0, 4, 1, 4, 0.4), "lo"), L(join([30, 36, 42].map((y) => frontRule(50, 90, y, 4))), "faint")];
+  for (let c = 0; c < 3; c++) {
+    for (let r = 0; r < 2; r++) out.push(S(box(53 + c * 12.5, 25 + r * 12.5, 10, 10, 4, 6, 1, 4, 0.4), "mid"));
+  }
+  items.push(halo(PAL, 3), G(out, { id: "out" }));
+
+  return {
+    name: "industrial",
+    view: [150, 270],
+    label: "A press cell: a control cabinet, a conveyor, a press and an inspection head, with a pallet of finished parts. A workpiece rides the belt from release to the press, the inspection head and the pallet, lighting each in turn.",
+    items,
+    period: 10,
+    rest: arrivals[0] + 0.02,
+    channels: [
+      { kind: "lit", ids: ["plc", "ram", "sensor", "out"], steps: [[0, [0]], [arrivals[1], [1]], [arrivals[2], [2]], [arrivals[3], [3]]] },
+      { kind: "move", id: "q", keys },
+      {
+        kind: "move",
+        id: "rammv",
+        keys: [
+          { t: 0, p: [0, 0, 0] },
+          { t: hit + 0.01, p: [0, 0, 0] },
+          { t: hit + 0.04, p: [0, 0, -4], e: "io" },
+          { t: hit + 0.08, p: [0, 0, 0], e: "io" },
+          { t: 1, p: [0, 0, 0] },
+        ],
+      },
+    ],
+    stages: [
+      { label: "Design release", t: arrivals[0] + 0.03 },
+      { label: "Machining", t: arrivals[1] + 0.03 },
+      { label: "Inspection", t: arrivals[2] + 0.03 },
+      { label: "Shop floor", t: arrivals[3] + 0.03 },
+    ],
+  };
+}
+
+export const INDUSTRY_SCENES = { drone, medtech, automotive, electronics, industrial } as const;
 export type IndustryKey = keyof typeof INDUSTRY_SCENES;

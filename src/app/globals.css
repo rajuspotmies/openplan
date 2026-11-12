@@ -427,6 +427,26 @@ html.dark :is(nav, footer, .bg-brand, .bg-black, .bg-\[\#0A0A0B\], .bg-\[\#0E0E1
   --c-n950: 10 10 10;
 }
 
+/* a dark section built from light-surface classes (the workflow tour): same swap as the dark
+   theme, but always on, with the page's #0A0A0B as its white */
+.surface-dark {
+  --c-white: 10 10 11;
+  --c-black: 255 255 255;
+  --c-ink: 246 246 247;
+  --c-n50: 22 22 24;
+  --c-n100: 28 28 31;
+  --c-n200: 44 44 48;
+  --c-n300: 66 66 71;
+  --c-n400: 118 118 124;
+  --c-n500: 146 146 152;
+  --c-n600: 172 172 178;
+  --c-n700: 202 202 207;
+  --c-n800: 226 226 230;
+  --c-n900: 240 240 242;
+  --c-n950: 250 250 250;
+  color-scheme: dark;
+}
+
 /* hover tints written as hex */
 html.dark .hover\:bg-\[\#FAFAFB\]:hover,
 html.dark .bg-\[\#FAFAFB\] {

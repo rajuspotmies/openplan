@@ -84,12 +84,15 @@ export default function PanelReveal({
   background,
   hero,
   children,
+  clip = true,
 }: {
   /** Pinned behind the hero and visible around the panel while it opens. */
   background: ReactNode;
   hero: ReactNode;
   /** The light content area. */
   children: ReactNode;
+  /** false: no opening/closing card clip, the panel just scrolls in over the hero. */
+  clip?: boolean;
 }) {
   const bgRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -111,10 +114,10 @@ export default function PanelReveal({
       const open = easeIn(clamp01((vh - rect.top) / vh));
       const close = easeIn(clamp01((vh - rect.bottom) / vh));
       const amount = Math.max(1 - open, close);
-      const clip = clipFor(amount, vw, "inset(0px)");
-      if (clip !== lastClip) {
-        panel.style.clipPath = clip;
-        lastClip = clip;
+      const next = clip ? clipFor(amount, vw, "inset(0px)") : "";
+      if (next !== lastClip) {
+        panel.style.clipPath = next;
+        lastClip = next;
       }
       // Once the panel covers the screen, retire the pinned hero background so the
       // closing reveals the plain dark page instead of the hero again.
@@ -144,7 +147,7 @@ export default function PanelReveal({
       bg.style.visibility = "";
       delete bg.dataset.paused;
     };
-  }, []);
+  }, [clip]);
 
   return (
     <div className="relative">
@@ -153,7 +156,7 @@ export default function PanelReveal({
         {background}
       </div>
       <div className="relative z-10">{hero}</div>
-      <div ref={panelRef} className="relative z-10 will-change-[clip-path]">
+      <div ref={panelRef} className={`relative z-10 ${clip ? "will-change-[clip-path]" : ""}`}>
         {children}
       </div>
     </div>

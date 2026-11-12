@@ -196,7 +196,7 @@ export default function SystemSlide() {
         <p className="ops-label">What we do</p>
         <h2 id="ops-fits-title" className="ops-h2" style={{ maxWidth: "31ch" }}>
           OpenPlan runs the whole hardware program.
-          <span className="ops-dim">The AI Architect watches every change, finds the risk, and fixes it before it reaches the line.</span>
+          <span className="ops-dim">The AI Architect catches risk before the line.</span>
         </h2>
       </div>
 

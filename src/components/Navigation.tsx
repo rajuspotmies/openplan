@@ -19,6 +19,7 @@ const industries = [
   { label: "Drones", href: "/industries/drone" },
   { label: "Automotive", href: "/industries/automotive" },
   { label: "Consumer electronics", href: "/industries/consumer-electronics" },
+  { label: "Industrial equipment", href: "/industries/industrial-equipment" },
 ];
 
 /** The dark theme is built (see "Themes" in globals.css); flip this to offer the switch again. */

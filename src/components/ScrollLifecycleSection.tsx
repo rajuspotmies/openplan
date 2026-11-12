@@ -1,11 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ClipboardList, ListChecks, GitBranch, Milestone, Cable, ArrowUpRight, Brain } from "lucide-react";
+import { ClipboardList, ListChecks, GitBranch, ArrowUpRight, Brain } from "lucide-react";
 
 const feature1 = "/assets/featureImages/F1.png";
 const feature2 = "/assets/featureImages/F2.png";
-const feature4 = "/assets/featureImages/F4.png";
-const F7 = "/assets/featureImages/F7.png";
 const fai = "/assets/featureImages/kk.png";
 const requirementsImg = "/assets/featureImages/requirements.png";
 import { useNavigate } from "@/lib/router";
@@ -19,7 +17,7 @@ const stages = [
     title: "AI Product Architecture",
     icon: Brain,
     description:
-      "Transform raw PRDs into fully structured projects instantly. Our AI analyzes requirements, resolves ambiguities, and auto-generates your module hierarchies and timelines.",
+      "Turn a raw PRD into modules, tasks and a timeline, instantly.",
     bullets: [
       "Instant PRD-to-Module mapping and analysis.",
       "AI-led interactive spec conflict resolution.",
@@ -39,7 +37,7 @@ const stages = [
     title: "Requirements",
     icon: ListChecks,
     description:
-      "From stakeholder need to verified component — nothing gets lost. Requirements flow through five tiers of decomposition with coverage and readiness tracked live.",
+      "Five tiers, need to component, with coverage tracked live.",
     bullets: [
       "5-tier decomposition: Need → Stakeholder → System → Subsystem → Component",
       "Live coverage tracking surfaces gaps automatically",
@@ -59,7 +57,7 @@ const stages = [
     title: "BOM Management",
     icon: ClipboardList,
     description:
-      "Capture product requirements, manage multi-level BOMs, and maintain full traceability from spec to certification. Every change is versioned. Nothing gets lost in email.",
+      "Multi-level BOMs, every revision kept, every part traced.",
     bullets: [
       "Multi-level BOM structures with full revision history",
       "Requirement-to-component traceability",
@@ -79,7 +77,7 @@ const stages = [
     title: "Engineering Change Management",
     icon: GitBranch,
     description:
-      "Structured ECO workflows with role-based approvals, deviation tracking, and audit trails. No more chasing sign-offs on Slack.",
+      "Role-based approvals and audit trails. No chasing sign-offs.",
     bullets: [
       "Role-based ECO approvals and stage gates",
       "Deviation tracking with decision history",
@@ -90,44 +88,6 @@ const stages = [
     tips: [
       { pin: [70, 31], at: [70, 45], anchor: [-50, 0], w: 30, text: "Approvals move stage by stage. Here, QA signs off next." },
       { pin: [41, 61], at: [41, 74], anchor: [-50, 0], w: 30, text: "Rev A against Rev B, parameter by parameter." },
-    ] as WorkflowTip[],
-  },
-  {
-    id: "program-milestone-and-gate-reviews",
-    shortLabel: "Milestones & Gates",
-    title: "Program Milestone & Gate Reviews",
-    icon: Milestone,
-    description:
-      "Define phase gates, assign owners, and track every milestone across workstreams in real time. PDR, CDR, MRR - all structured, all visible.",
-    bullets: [
-      "Phase gate templates for hardware lifecycles",
-      "Owner-level milestone accountability",
-      "Cross-team visibility for PDR/CDR/MRR readiness",
-    ],
-    cta: "Explore milestone reviews",
-    image: feature4,
-    tips: [
-      { pin: [30, 18.7], at: [30, 29], anchor: [-40, 0], w: 30, text: "Current phase, days to the next gate and open issues at a glance." },
-      { pin: [61.3, 52], at: [61.3, 63], anchor: [-50, 0], w: 30, text: "Every gate review on one program timeline." },
-    ] as WorkflowTip[],
-  },
-  {
-    id: "cad-and-plm-tools",
-    shortLabel: "CAD & PLM",
-    title: "CAD & PLM Tools",
-    icon: Cable,
-    description:
-      "Sync directly with SolidWorks, Onshape, Autodesk Fusion 360, and PTC Creo. Design data stays current without manual uploads or version mismatches.",
-    bullets: [
-      "Direct sync across major CAD platforms",
-      "PLM alignment with current design revisions",
-      "No manual uploads or version drift",
-    ],
-    cta: "Explore CAD/PLM integrations",
-    image: F7,
-    tips: [
-      { pin: [18.5, 32.5], at: [21, 46], anchor: [0, 0], w: 28, text: "Each CAD and PLM tool shows its connection status." },
-      { pin: [92, 85], at: [88, 72], anchor: [-100, -50], w: 30, text: "A file out of step is flagged, never silently overwritten." },
     ] as WorkflowTip[],
   },
 ];
@@ -160,10 +120,10 @@ const ScrollLifecycleSection = () => {
   };
 
   return (
-    <section id="workflow-section" className="relative bg-white text-brand-ink">
+    <section id="workflow-section" className="surface-dark relative bg-[#0A0A0B] text-brand-ink">
 
       {/* =====================  MOBILE: stages stacked, revealed as you scroll  ===================== */}
-      <div className="lg:hidden bg-white">
+      <div className="lg:hidden">
         {/* Sticky progress: current stage and a segment per stage */}
         <div className="sticky top-[64px] z-30 border-b border-black/[0.06] bg-white/90 px-4 pb-3 pt-3 backdrop-blur-xl">
           <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.14em]">
@@ -183,7 +143,7 @@ const ScrollLifecycleSection = () => {
               </motion.span>
             </AnimatePresence>
           </div>
-          <div className="mt-2.5 grid grid-cols-6 gap-1">
+          <div className="mt-2.5 grid grid-cols-4 gap-1">
             {stages.map((s, i) => (
               <button
                 key={s.id}

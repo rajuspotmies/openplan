@@ -39,7 +39,7 @@ export interface WorkflowStage {
   tips: WorkflowTip[];
 }
 
-// short names so all six tabs fit on one row
+// short names so the tabs fit on one row
 const TAB_LABEL: Record<string, string> = {
   "BOM Management": "BOM",
   "Engineering Change": "ECO",
@@ -169,7 +169,7 @@ export default function WorkflowShowcase({ stages, onCta }: { stages: WorkflowSt
           <div className="col-start-2 row-start-1">
             <div className="sticky top-[max(84px,calc(50vh-min(22.5vw,370px)))] ml-auto w-[min(100%,calc(160vh-288px))]">
               {/* rail */}
-              <div role="tablist" aria-label="Workflow stages" className="mb-[18px] grid grid-cols-6 gap-1.5">
+              <div role="tablist" aria-label="Workflow stages" className="mb-[18px] grid grid-cols-4 gap-1.5">
                 {stages.map((s, i) => {
                   const on = i === active;
                   const done = i < active;
@@ -213,9 +213,9 @@ export default function WorkflowShowcase({ stages, onCta }: { stages: WorkflowSt
               <div className="relative isolate [container-type:inline-size]">
                 <div
                   aria-hidden
-                  className="pointer-events-none absolute inset-x-[-12%] inset-y-[-20%] -z-10 bg-[radial-gradient(50%_50%_at_50%_42%,rgba(47,91,255,0.08),transparent_100%)]"
+                  className="pointer-events-none absolute inset-x-[-12%] inset-y-[-20%] -z-10 bg-[radial-gradient(50%_50%_at_50%_42%,rgba(47,91,255,0.14),transparent_100%)]"
                 />
-                <div className="relative aspect-[16/10] overflow-hidden rounded-[10px] bg-[#0d0d0e] shadow-[0_0_0_1px_rgba(10,10,11,0.1),0_30px_80px_-20px_rgba(10,10,11,0.45)]">
+                <div className="relative aspect-[16/10] overflow-hidden rounded-[10px] bg-[#0d0d0e] shadow-[0_0_0_1px_rgba(255,255,255,0.1),0_30px_80px_-20px_rgba(0,0,0,0.7)]">
                   {stages.map((s, i) => {
                     const on = i === active;
                     return (
