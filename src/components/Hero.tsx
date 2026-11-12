@@ -18,7 +18,8 @@ const BP = HERO_DESIGN === "blueprint";
 const backers = [
   { name: "Google for Startups", Logo: GoogleLogo, logo: "h-[18px] sm:h-[30px]", suffix: "for Startups" },
   { name: "NVIDIA Inception", Logo: NvidiaLogo, logo: "h-[16px] sm:h-[28px]", suffix: "Inception" },
-  { name: "AWS for Startups", Logo: AwsLogo, logo: "h-[21px] sm:h-[34px]", suffix: "for Startups" },
+  // the AWS mark carries its smile below the letters, so the label lifts to the letters' centre line
+  { name: "AWS for Startups", Logo: AwsLogo, logo: "h-[21px] sm:h-[34px]", suffix: "for Startups", lift: "-translate-y-[3px] sm:-translate-y-[5px]" },
 ];
 
 /*
@@ -151,7 +152,7 @@ const AsciiHero = ({ background = true }: { background?: boolean }) => {
         <motion.div {...reveal(0.34)} className="mt-7 flex flex-col items-center sm:mt-6">
           <p className="font-mono text-[10.5px] tracking-[0.04em] text-white/65 sm:text-[13px] sm:text-white/75">Backed by</p>
           <ul className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:mt-4 sm:gap-x-12 sm:gap-y-5">
-            {backers.map(({ name, Logo, logo, suffix }) => (
+            {backers.map(({ name, Logo, logo, suffix, lift }) => (
               <li
                 key={name}
                 title={name}
@@ -159,7 +160,7 @@ const AsciiHero = ({ background = true }: { background?: boolean }) => {
               >
                 <Logo color className={`${logo} w-auto`} />
                 {suffix && (
-                  <span className="whitespace-nowrap text-[13px] font-medium tracking-[-0.02em] transition-colors duration-500 ease-out group-hover:text-white sm:text-[20px]">
+                  <span className={`whitespace-nowrap text-[13px] font-medium tracking-[-0.02em] transition-colors duration-500 ease-out group-hover:text-white sm:text-[20px] ${lift ?? ""}`}>
                     {suffix}
                   </span>
                 )}

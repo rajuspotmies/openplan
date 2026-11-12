@@ -167,7 +167,7 @@ function buildScene(W: number, H: number, seed: number, compact: boolean): Scene
     dots.push({ x: px, y: py, s, sp, ph: 6.283 * rnd(), fq: rr(1.4, 3.6) });
   };
 
-  const C = clamp(Math.round(H / 260), H < 480 ? 2 : 3, 4);
+  const C = H < 480 ? 2 : 3; // three shelves: stocked top, middle with a clear centre, stocked bottom
   const T = H / (C + 0.28);
   const k = clamp(0.075 * T, 7, 16);
   const I = 0.85 * T;
@@ -649,12 +649,25 @@ function buildScene(W: number, H: number, seed: number, compact: boolean): Scene
     const base = R(row);
     const count = perRow;
     const sw = (span1 - span0) / Math.max(1, count);
-    for (let j = 0; j < count && next < ORDER.length; j++) {
+    const slots = Array.from({ length: count }, (_, j) => span0 + (j + 0.5) * sw);
+    const inBand = (x: number) => x > 0.3 * W && x < 0.7 * W;
+    const band = slots.filter(inBand);
+    let xs = slots;
+    if (C === 3 && row === 1) {
+      // the middle shelf keeps its centre clear, behind the headline
+      xs = slots.filter((x) => !inBand(x));
+    } else if (row === 0 && band.length > 2) {
+      // the top shelf shows just two parts above the pill, spread evenly between their neighbours
+      const a = band[0] - sw, L = band[band.length - 1] + sw - a;
+      xs = [...slots.filter((x) => x < band[0]), a + L / 3, a + (2 * L) / 3, ...slots.filter((x) => x > band[band.length - 1])];
+    }
+    const room2 = Math.min(sw, xs.length > 1 ? Math.min(...xs.slice(1).map((x, k) => x - xs[k])) : sw);
+    for (const cx of xs) {
+      if (next >= ORDER.length) break;
       const kind = ORDER[next++];
       let u = room * (SCALE[kind] ?? 1);
       const fw = WIDTH[kind] * u;
-      if (fw > 0.8 * sw) u *= (0.8 * sw) / fw;
-      const cx = span0 + (j + 0.5) * sw;
+      if (fw > 0.8 * room2) u *= (0.8 * room2) / fw;
       const pat = PATTERNS[Math.floor(rnd() * PATTERNS.length)];
       draw[kind](cx, base, u, pat, rr(0, 6.28), clamp(0.024 * u, 4, 6));
       tag(cx, base);

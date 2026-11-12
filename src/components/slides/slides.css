@@ -156,7 +156,7 @@
 /* layers above the hovered one turn to a faint ghost so the hovered layer shows through;
    they also let the pointer through, so moving across them keeps the hovered layer lit */
 .ops-layer { transition: stroke 0.3s, opacity 0.3s; }
-.ops-layer[data-veil] { opacity: 0.12; pointer-events: none; }
+.ops-layer[data-veil] { opacity: 0.4; pointer-events: none; } /* layers above the lit one stay readable */
 .ops-inset { fill: none; stroke: rgba(255, 255, 255, 0.07); }
 .ops-ink { fill: none; stroke: rgba(255, 255, 255, 0.36); transition: stroke 0.3s; }
 .ops-ghost { fill: none; stroke: rgba(255, 255, 255, 0.12); }

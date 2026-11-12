@@ -39,6 +39,7 @@ const Footer = () => (
     meta={`©${new Date().getFullYear()} · Velmond Labs Private Limited`}
     columns={COLUMNS}
     height="clamp(440px, 34vw + 300px, 560px)"
+    palette={{ warm: "#3D68FF" }} /* dots glow the hero's brand blue (not orange) when pushed */
   />
 );
 

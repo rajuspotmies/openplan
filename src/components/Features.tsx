@@ -140,11 +140,11 @@ const Features = () => {
           </BlurReveal>
         </div>
 
-        <div className="mt-16 grid items-start gap-10 md:mt-20 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)] lg:gap-14">
+        <div className="mt-16 grid items-start gap-10 md:mt-20 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)] lg:gap-14">
           {/* Figure */}
           <div
             ref={figureRef}
-            className="sticky top-16 z-20 -mx-6 border-b border-black/[0.06] bg-white/95 px-6 backdrop-blur-sm sm:-mx-8 sm:px-8 lg:top-28 lg:z-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none"
+            className="sticky top-16 z-20 -mx-6 border-b border-black/[0.06] bg-white/95 px-6 backdrop-blur-sm sm:-mx-8 sm:px-8 lg:order-2 lg:top-28 lg:z-auto lg:mx-0 lg:border-0 lg:bg-transparent lg:px-0 lg:backdrop-blur-none"
           >
             <BlurReveal y={28} blur={18} className="mx-auto max-w-[460px] lg:max-w-none">
               <BenchFigure active={active} />
@@ -152,7 +152,7 @@ const Features = () => {
           </div>
 
           {/* Feature list: hover or focus opens the drawer, click pins it */}
-          <ol className="divide-y divide-black/[0.07] border-y border-black/[0.07]" onPointerLeave={() => setHovering(false)}>
+          <ol className="divide-y divide-black/[0.07] border-y border-black/[0.07] lg:order-1" onPointerLeave={() => setHovering(false)}>
             {features.map((f, i) => {
               const on = i === active;
               return (

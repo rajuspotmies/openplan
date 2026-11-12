@@ -42,9 +42,9 @@ const tiers: Tier[] = [
   {
     name: "Pro",
     bestFor: "Everything a growing hardware team needs to ship.",
-    price: { monthly: "$12", yearly: "$10" },
+    price: { monthly: "$24", yearly: "$20" },
     cadence: "/ user / month",
-    note: { monthly: "Billed monthly", yearly: "Billed yearly · $120 per user" },
+    note: { monthly: "Billed monthly", yearly: "Billed yearly · $240 per user" },
     features: [
       "Unlimited users",
       "Unlimited BOMs / 5K parts",
@@ -206,7 +206,7 @@ const Pricing = () => {
                           <span className={`mb-1 font-mono text-[12px] tracking-[0.02em] ${dark ? "text-white/50" : "text-neutral-500"}`}>{tier.cadence}</span>
                         )}
                         {dark && yearly && (
-                          <span className="mb-1 font-mono text-[12px] text-white/35 line-through">$12</span>
+                          <span className="mb-1 font-mono text-[12px] text-white/35 line-through">$24</span>
                         )}
                       </div>
                       <p className={`mt-3 h-4 font-mono text-[11.5px] tracking-[0.02em] ${dark ? "text-white/45" : "text-neutral-400"}`}>{tier.note[period]}</p>
