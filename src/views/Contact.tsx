@@ -244,7 +244,7 @@ const Contact = () => {
                         >
                           <SelectValue placeholder="Select a subject" />
                         </SelectTrigger>
-                        <SelectContent className="z-[100]">
+                        <SelectContent className="z-[100] border-white/10 bg-[#111113] text-white shadow-[0_12px_32px_rgba(0,0,0,0.6)]">
                           <SelectItem value="general">General Inquiry</SelectItem>
                           <SelectItem value="sales">Sales</SelectItem>
                           <SelectItem value="support">Technical Support</SelectItem>

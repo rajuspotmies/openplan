@@ -52,6 +52,8 @@ const TAB_LABEL: Record<string, string> = {
 
 const EASE = "cubic-bezier(0.22,1,0.36,1)";
 
+const SHOW_TIPS = false;
+
 export default function WorkflowShowcase({ stages, onCta, live = true }: { stages: WorkflowStage[]; onCta: () => void; live?: boolean }) {
   const [active, setActive] = useState(0);
   // Live screens are heavy: keep only the active one mounted, plus the one fading out.
@@ -263,8 +265,8 @@ export default function WorkflowShowcase({ stages, onCta, live = true }: { stage
                     );
                   })}
 
-                  {/* callouts */}
-                  {stages.map((s, i) =>
+                  {/* callouts (hidden for now; the tips still pace the scroll steps) */}
+                  {SHOW_TIPS && stages.map((s, i) =>
                     s.tips.map((t, k) => (
                       <div key={`${s.id}-${k}`} aria-hidden className="tour-tip" data-on={(i === active && k === tip) || undefined}>
                         <svg className="tour-leader">
@@ -295,7 +297,7 @@ export default function WorkflowShowcase({ stages, onCta, live = true }: { stage
 
               {/* the current callout, for screen readers */}
               <p className="sr-only" aria-live="polite">
-                {tip >= 0 ? stages[active].tips[tip]?.text : ""}
+                {SHOW_TIPS && tip >= 0 ? stages[active].tips[tip]?.text : ""}
               </p>
             </div>
           </div>
