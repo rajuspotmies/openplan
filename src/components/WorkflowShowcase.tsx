@@ -248,7 +248,7 @@ export default function WorkflowShowcase({ stages, onCta, live = true }: { stage
                         }}
                       >
                         {s.screen ? (
-                          live && (on || i === leaving) && <s.screen active={on} step={on ? Math.max(tip, 0) : 0} />
+                          live && (on || i === leaving) && <s.screen active={on} step={null} />
                         ) : (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img

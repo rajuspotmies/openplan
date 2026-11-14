@@ -10,6 +10,7 @@
  *   04 ECO           — project workspace, Eng. Changes tab: Engineering Change Notice
  */
 
+import { memo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Scaled, useStageClock, type ScreenProps } from "./screen-kit";
 import {
@@ -61,34 +62,142 @@ const PLAN_BOARD_AT = ("Overview".length + PLAN_TEXT.length + "Task Board".lengt
 const KANBAN_BEATS = KANBAN.flatMap((col) => [0.26, ...col.cards.map(() => 0.13)]);
 const PLAN_DONE = PLAN_BOARD_AT + 0.26 + sum(KANBAN_BEATS) + 0.3;
 
-function PlanningDoc({ t, start }: { t: number; start: number }) {
-  const rev = (t - start) * PLAN_CPS;
+/** A chat document: types itself from `start`, or shows finished when `instant` (it sits behind in the stack). */
+interface ChatDocProps {
+  t: number;
+  start: number;
+  instant?: boolean;
+}
+
+const PlanningDoc = memo(function PlanningDoc({ t, start, instant }: ChatDocProps) {
+  const rev = instant ? Infinity : (t - start) * PLAN_CPS;
   const c = cursorOf();
-  const count = stepsAt(t - start - PLAN_BOARD_AT, KANBAN_BEATS, 0.26);
-  const done = t >= start + PLAN_DONE;
+  const count = instant ? kanbanSteps() : stepsAt(t - start - PLAN_BOARD_AT, KANBAN_BEATS, 0.26);
+  const done = instant || t >= start + PLAN_DONE;
   return (
-    <DocCard title="Project Planning" height={CARD_H} tick={tick(t)} settled={done} shimmer={done && t < start + PLAN_DONE + 0.9}>
+    <DocCard title="Project Planning" height={CARD_H} tick={tick(t)} settled={done} shimmer={!instant && done && t < start + PLAN_DONE + 0.9}>
       <Section heading="Overview" start={c.take(8)} revealed={rev}>
         <P text={PLAN_TEXT} start={c.take(PLAN_TEXT.length)} revealed={rev} />
       </Section>
       <Section heading="Task Board" start={c.take(10)} revealed={rev}>
-        {t >= start + PLAN_BOARD_AT && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+        {(instant || t >= start + PLAN_BOARD_AT) && (
+          <motion.div initial={instant ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
             <KanbanBoard count={count} done={count >= kanbanSteps()} />
           </motion.div>
         )}
       </Section>
     </DocCard>
   );
-}
+});
 
+// Requirement Document (chat card)
+const RQ_TEXT =
+  "This document captures the preliminary requirements for a last-mile delivery rover with a 10km one-way operating range, based on the brief provided.";
+const RQ_CPS = 190;
+const RQ_TREE_AT = ("Overview".length + RQ_TEXT.length + "Requirements Breakdown".length) / RQ_CPS;
+const RQ_BEATS = REQ_TREE.branches.flatMap((b) => [0.3, ...b.leaves.map(() => 0.17)]);
+const RQ_DONE = RQ_TREE_AT + 0.32 + sum(RQ_BEATS) + 0.3;
+
+const RequirementChatDoc = memo(function RequirementChatDoc({ t, start, instant }: ChatDocProps) {
+  const rev = instant ? Infinity : (t - start) * RQ_CPS;
+  const c = cursorOf();
+  const count = instant ? treeSteps(REQ_TREE) : stepsAt(t - start - RQ_TREE_AT, RQ_BEATS, 0.32);
+  const done = instant || t >= start + RQ_DONE;
+  return (
+    <DocCard title="Requirement Document" height={CARD_H} tick={tick(t)} settled={done} shimmer={!instant && done && t < start + RQ_DONE + 0.9}>
+      <Section heading="Overview" start={c.take(8)} revealed={rev}>
+        <P text={RQ_TEXT} start={c.take(RQ_TEXT.length)} revealed={rev} />
+      </Section>
+      <Section heading="Requirements Breakdown" start={c.take(22)} revealed={rev}>
+        {(instant || t >= start + RQ_TREE_AT) && (
+          <motion.div initial={instant ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.35 }}>
+            <RequirementTree data={REQ_TREE} count={Math.min(count, treeSteps(REQ_TREE))} />
+          </motion.div>
+        )}
+      </Section>
+    </DocCard>
+  );
+});
+
+// Build Plan & Bill of Materials (chat card)
+const BC_CPS = 190;
+const BC_DONE = ("Bill of Materials".length + bomLength() + "Timeline & Cost Summary".length + specLength(BOM_SPEC)) / BC_CPS + 0.3;
+
+const BomChatDoc = memo(function BomChatDoc({ t, start, instant }: ChatDocProps) {
+  const rev = instant ? Infinity : (t - start) * BC_CPS;
+  const c = cursorOf();
+  const done = instant || t >= start + BC_DONE;
+  const h1 = c.take(17);
+  const cardsAt = c.take(bomLength());
+  const h2 = c.take(23);
+  const specStarts = BOM_SPEC.map((r) => [c.take(r.label.length), c.take(r.value.length)] as [number, number]);
+  return (
+    <DocCard title="Build Plan & Bill of Materials" height={CARD_H} tick={tick(t)} settled={done} shimmer={!instant && done && t < start + BC_DONE + 0.9}>
+      <Section heading="Bill of Materials" start={h1} revealed={rev}>
+        <BomCards start={cardsAt} revealed={rev} />
+      </Section>
+      <Section heading="Timeline & Cost Summary" start={h2} revealed={rev}>
+        <Spec rows={BOM_SPEC} starts={specStarts} revealed={rev} />
+      </Section>
+    </DocCard>
+  );
+});
+
+// Engineering Change Notice (chat card)
+const EC_CPS = 300;
+const EC_TAIL = "Want me to open these as tasks in the project?";
+const ecSecLen = (sec: (typeof ECN)[number]) => sec.heading.length + (sec.p?.length ?? 0) + (sec.ul?.reduce((a, i) => a + i.length, 0) ?? 0) + (sec.spec ? specLength(sec.spec) : 0);
+const EC_DONE = (sum(ECN.map(ecSecLen)) + EC_TAIL.length) / EC_CPS + 0.3;
+
+const EcnChatDoc = memo(function EcnChatDoc({ t, start, instant }: ChatDocProps) {
+  const rev = instant ? Infinity : (t - start) * EC_CPS;
+  const c = cursorOf();
+  const done = instant || t >= start + EC_DONE;
+  return (
+    <DocCard title="Engineering Change Notice" height={CARD_H} tick={tick(t)} settled={done} shimmer={!instant && done && t < start + EC_DONE + 0.9}>
+      {ECN.map((sec) => (
+        <Section key={sec.heading} heading={sec.heading} start={c.take(sec.heading.length)} revealed={rev}>
+          {sec.p && <P text={sec.p} start={c.take(sec.p.length)} revealed={rev} />}
+          {sec.ul && <Ul items={sec.ul} starts={sec.ul.map((i) => c.take(i.length))} revealed={rev} />}
+          {sec.spec && <Spec rows={sec.spec} starts={sec.spec.map((r) => [c.take(r.label.length), c.take(r.value.length)] as [number, number])} revealed={rev} />}
+        </Section>
+      ))}
+      <P text={EC_TAIL} start={c.take(EC_TAIL.length)} revealed={rev} />
+    </DocCard>
+  );
+});
+
+// The conversation, in the video's order. Each document types itself out and shimmers,
+// then the thinking pill runs above the input and the next one rises in front of it.
 const S1 = { type: 0.9, cps: 22, send: 5.0, think: 5.3, arrive: 8.5 };
-const S1_PHASES = [S1.send - 0.3, S1.arrive - 0.1, S1.arrive + RISE + PLAN_DONE + 0.9];
+const PILL = 2.4;
+const CHAT_DOCS = [
+  { key: "req", Doc: RequirementChatDoc, dur: RQ_DONE },
+  { key: "plan", Doc: PlanningDoc, dur: PLAN_DONE },
+  { key: "bom", Doc: BomChatDoc, dur: BC_DONE },
+  { key: "ecn", Doc: EcnChatDoc, dur: EC_DONE },
+];
+const ARRIVALS: number[] = [];
+const THINKS: number[] = [S1.think];
+CHAT_DOCS.reduce((at, d, i) => {
+  ARRIVALS.push(at);
+  const next = at + RISE + d.dur + 0.9 + 0.4;
+  if (i < CHAT_DOCS.length - 1) THINKS.push(next);
+  return next + PILL;
+}, S1.arrive);
+const S1_END = ARRIVALS[ARRIVALS.length - 1] + RISE + EC_DONE + 1.2;
+const S1_PHASES = [S1_END];
 
 export function ArchitectScreen({ active, step, compact }: ScreenProps) {
-  const t = useStageClock(active, step, S1_PHASES, 4);
+  const t = useStageClock(active, step, S1_PHASES, 5);
   const typedText = PROMPT.slice(0, Math.max(0, Math.floor((t - S1.type) * S1.cps)));
-  const cards = t >= S1.arrive ? [{ key: "plan", fresh: true, node: <PlanningDoc t={t} start={S1.arrive + RISE} /> }] : [];
+  const arrived = ARRIVALS.filter((a) => t >= a).length;
+  const cards = CHAT_DOCS.slice(0, arrived).map(({ key, Doc }, i) => {
+    const front = i === arrived - 1;
+    return { key, fresh: true, node: front ? <Doc t={t} start={ARRIVALS[i] + RISE} /> : <Doc t={0} start={0} instant /> };
+  });
+  const thinkingIdx = THINKS.findIndex((s, i) => t >= s && t < ARRIVALS[i]);
+  const thinking = thinkingIdx >= 0 ? t - THINKS[thinkingIdx] : null;
   return (
     <Scaled compact={compact}>
       <AssistantShell compact={compact}>
@@ -99,7 +208,7 @@ export function ArchitectScreen({ active, step, compact }: ScreenProps) {
             </motion.div>
           ) : (
             <motion.div key="chat" className="flex min-h-0 flex-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
-              <ChatView prompt={PROMPT} cardHeight={CARD_H} thinking={t >= S1.think && t < S1.arrive ? t - S1.think : null} cards={cards} />
+              <ChatView prompt={PROMPT} cardHeight={CARD_H} thinking={thinking} cards={cards} />
             </motion.div>
           )}
         </AnimatePresence>
@@ -129,7 +238,7 @@ export function RequirementsScreen({ active, step, compact }: ScreenProps) {
   const n = (f: (l: (typeof shown)[number]) => boolean) => shown.filter(f).length;
   return (
     <Scaled compact={compact}>
-      <WorkspaceShell tab={0} compact={compact}>
+      <WorkspaceShell tab={0} compact={compact} action="New Requirement">
         <DocCard
           bare
           title="Requirements"
@@ -190,7 +299,7 @@ export function BomScreen({ active, step, compact }: ScreenProps) {
   const specStarts = BOM_SPEC.map((r) => [c.take(r.label.length), c.take(r.value.length)] as [number, number]);
   return (
     <Scaled compact={compact}>
-      <WorkspaceShell tab={1} compact={compact}>
+      <WorkspaceShell tab={1} compact={compact} action="Add Part">
         <DocCard
           bare
           title="Bill of Materials"
@@ -227,57 +336,4 @@ export function BomScreen({ active, step, compact }: ScreenProps) {
 
 /* ======================= 04 · Engineering change workspace ======================= */
 
-const ECN_START = 0.7;
-const ECN_CPS = 320;
-type EcnSec = (typeof ECN)[number];
-const secLen = (sec: EcnSec) => sec.heading.length + (sec.p?.length ?? 0) + (sec.ul?.reduce((a, i) => a + i.length, 0) ?? 0) + (sec.spec ? specLength(sec.spec) : 0);
-const ECN_LEFT = ["Summary of Changes", "Reason for Change", "Change Log", "Impact Assessment"];
-const LEFT = ECN.filter((s) => ECN_LEFT.includes(s.heading));
-const RIGHT = ECN.filter((s) => !ECN_LEFT.includes(s.heading));
-const ECN_DONE = ECN_START + sum(ECN.map(secLen)) / ECN_CPS + 0.3;
-const S4_PHASES = [ECN_START + sum(LEFT.slice(0, 3).map(secLen)) / ECN_CPS, ECN_DONE + 0.9];
-
-export function EcoScreen({ active, step, compact }: ScreenProps) {
-  const t = useStageClock(active, step, S4_PHASES, 4);
-  const rev = (t - ECN_START) * ECN_CPS;
-  const done = t >= ECN_DONE;
-  const c = cursorOf();
-  const render = (sec: EcnSec) => (
-    <Section key={sec.heading} heading={sec.heading} start={c.take(sec.heading.length)} revealed={rev}>
-      {sec.p && <P text={sec.p} start={c.take(sec.p.length)} revealed={rev} />}
-      {sec.ul && <Ul items={sec.ul} starts={sec.ul.map((i) => c.take(i.length))} revealed={rev} />}
-      {sec.spec && <Spec rows={sec.spec} starts={sec.spec.map((r) => [c.take(r.label.length), c.take(r.value.length)] as [number, number])} revealed={rev} />}
-    </Section>
-  );
-  const left = LEFT.map(render);
-  const right = RIGHT.map(render);
-  return (
-    <Scaled compact={compact}>
-      <WorkspaceShell tab={2} compact={compact}>
-        <DocCard
-          bare
-          title="Engineering Change Notice"
-          tick={tick(t)}
-          settled={done}
-          shimmer={done && t < ECN_DONE + 0.9}
-          header={
-            <DocHeader
-              title="Engineering Change Notice"
-              aside={
-                <>
-                  <span className="rounded-full border border-[#26262c] bg-[#1a1a1f] px-2 py-0.5 font-mono text-[10.5px] text-[#a8a8ae]">ECN-2026-0142</span>
-                  <span className="rounded-full border border-[#3d2e18] bg-[#2a1f10]/60 px-2 py-0.5 text-[10.5px] font-medium text-[#e8b374]">Pending review</span>
-                </>
-              }
-            />
-          }
-        >
-          <div className={`grid gap-6 ${compact ? "grid-cols-1" : "grid-cols-[minmax(0,1.35fr)_minmax(0,1fr)]"}`}>
-            <div className="flex min-w-0 flex-col gap-5">{left}</div>
-            <div className="flex min-w-0 flex-col gap-5">{right}</div>
-          </div>
-        </DocCard>
-      </WorkspaceShell>
-    </Scaled>
-  );
-}
+export { EcoScreen } from "./EcoWorkspace";

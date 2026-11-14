@@ -29,9 +29,9 @@ const stages = [
     screen: ArchitectScreen,
     tips: [
       // COPY FOR APPROVAL: callouts for the live Assistant screens
-      { pin: [34, 34], at: [55, 11], anchor: [0, -50], w: 30, text: "Describe what you're building, in plain words." },
-      { pin: [53, 23], at: [65, 40], anchor: [0, -50], w: 30, text: "OpenPlan AI searches, thinks and works out a plan." },
-      { pin: [30, 50], at: [52, 80], anchor: [0, -50], w: 30, text: "Tasks come back on a board, from backlog to done." },
+      { pin: [40, 90], at: [40, 74], anchor: [0, -50], w: 30, text: "Describe what you're building, in plain words." },
+      { pin: [21, 30], at: [45, 30], anchor: [0, -50], w: 30, text: "Requirements, plan, BOM and change notice come back one by one." },
+      { pin: [30, 60], at: [55, 74], anchor: [0, -50], w: 30, text: "Every document lands in your workspace, ready to share." },
     ] as WorkflowTip[],
   },
   {

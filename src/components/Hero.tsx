@@ -14,7 +14,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 /** Blueprint design (see heroDesign.ts): blue primary button, quieter outlines, two-tone headline. */
 const BP = HERO_DESIGN === "blueprint";
 
-/** Programs backing OpenPlan: white marks that ease into their brand colours on hover. */
+/** Programs backing OpenPlan: silver-gradient marks; the hovered one lights up in its brand colours. */
 const backers = [
   { name: "Google for Startups", Logo: GoogleLogo, logo: "h-[18px] sm:h-[30px]", suffix: "for Startups" },
   { name: "NVIDIA Inception", Logo: NvidiaLogo, logo: "h-[16px] sm:h-[28px]", suffix: "Inception" },
@@ -151,16 +151,18 @@ const AsciiHero = ({ background = true }: { background?: boolean }) => {
         {/* Backed by */}
         <motion.div {...reveal(0.34)} className="mt-7 flex flex-col items-center sm:mt-6">
           <p className="font-mono text-[10.5px] tracking-[0.04em] text-white/65 sm:text-[13px] sm:text-white/75">Backed by</p>
-          <ul className="mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:mt-4 sm:gap-x-12 sm:gap-y-5">
+          <ul className="group/backers mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:mt-4 sm:gap-x-12 sm:gap-y-5">
             {backers.map(({ name, Logo, logo, suffix, lift }) => (
               <li
                 key={name}
                 title={name}
-                className="group flex cursor-default items-center gap-2 text-white/85 opacity-90 transition-opacity duration-500 ease-out hover:opacity-100"
+                className="group flex cursor-default items-center gap-2 transition-[opacity,transform,filter] duration-500 ease-out group-hover/backers:opacity-45 hover:!opacity-100 hover:-translate-y-0.5 hover:drop-shadow-[0_0_18px_rgba(255,255,255,0.22)]"
               >
-                <Logo color className={`${logo} w-auto`} />
+                <Logo gradient className={`${logo} w-auto`} />
                 {suffix && (
-                  <span className={`whitespace-nowrap text-[13px] font-medium tracking-[-0.02em] transition-colors duration-500 ease-out group-hover:text-white sm:text-[20px] ${lift ?? ""}`}>
+                  <span
+                    className={`whitespace-nowrap bg-gradient-to-br from-white via-[#C9CDD4] to-[#7D838D] bg-clip-text text-[13px] font-medium tracking-[-0.02em] text-transparent transition-colors duration-500 ease-out group-hover:text-white sm:text-[20px] ${lift ?? ""}`}
+                  >
                     {suffix}
                   </span>
                 )}

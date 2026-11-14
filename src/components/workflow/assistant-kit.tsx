@@ -39,8 +39,8 @@ import {
   ListChecks,
   TriangleAlert,
 } from "lucide-react";
-import { Boxes, ChevronLeft, GitBranch, Layers, ListTodo } from "lucide-react";
-import { A, AVATARS, BOM, BOM_SPEC, BOM_TOTAL, KANBAN, SUGGESTIONS, USER_NAME, type ReqLeaf, type ReqTreeData } from "./assistant-data";
+import { Boxes, GitBranch, Layers, ListTodo } from "lucide-react";
+import { AVATARS, BOM, BOM_SPEC, BOM_TOTAL, KANBAN, SUGGESTIONS, USER_NAME, type ReqLeaf, type ReqTreeData } from "./assistant-data";
 
 export const NO_SCROLLBAR = "[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden";
 
@@ -64,8 +64,9 @@ export function AssistantShell({ compact, children }: { compact?: boolean; child
     <div className="flex h-full bg-[#0a0a0d] font-sans text-[#e8e8ea]">
       {!compact && (
         <div className="flex w-[64px] shrink-0 flex-col items-center gap-2 border-r border-[#1c1c22] py-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${A}/project-pic.png`} alt="" className="mb-4 h-8 w-8 rounded-lg border border-[#26262c] object-cover" />
+          <div className="mb-4 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#2a2a31] bg-[#16161b] text-[#fff]">
+            <OpenPlanLogo className="h-4 w-4" />
+          </div>
           {SIDEBAR_ICONS.map((Icon, i) => (
             <div key={i} className={`flex h-10 w-10 items-center justify-center rounded-xl ${i === 1 ? "bg-[#f2f2f2] text-[#0a0a0d]" : "text-[#6b6b76]"}`}>
               <Icon size={18} />
@@ -806,68 +807,86 @@ export function BomCards({ start, revealed, cols }: { start: number; revealed: n
 const TABS = [
   { label: "Requirements", Icon: ListChecks, n: null as number | null },
   { label: "BOM", Icon: Layers, n: null as number | null },
-  { label: "Eng. Changes", Icon: GitBranch, n: 11 },
+  { label: "Eng. Changes", Icon: GitBranch, n: 8 },
   { label: "Tasks", Icon: ListTodo, n: 20 },
   { label: "Modules", Icon: Boxes, n: 6 },
   { label: "Milestones", Icon: Flag, n: 4 },
   { label: "Issues", Icon: TriangleAlert, n: 16 },
 ];
 
-/** The project workspace: app sidebar, project bar, module tabs, then the page. */
-export function WorkspaceShell({ tab, compact, children }: { tab: number; compact?: boolean; children: ReactNode }) {
+/** The OpenPlan app sidebar, with the OpenPlan mark on top and the active section highlighted. */
+export function AppSidebar({ active }: { active: number }) {
+  return (
+    <div className="flex w-[56px] shrink-0 flex-col items-center gap-1.5 border-r border-[#1c1c22] py-3.5">
+      <div className="mb-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#2a2a31] bg-[#16161b] text-[#fff]">
+        <OpenPlanLogo className="h-4 w-4" />
+      </div>
+      {SIDEBAR_ICONS.map((Icon, i) => (
+        <div key={i} className={`flex h-9 w-9 items-center justify-center rounded-lg ${i === active ? "bg-[#1f1f25] text-[#fff]" : "text-[#6b6b76]"}`}>
+          <Icon size={17} />
+        </div>
+      ))}
+      <div className="flex-1" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#f2f2f2] text-[#0a0a0d]">
+        <OpenPlanLogo className="h-4 w-4" />
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The project workspace, as in the OpenPlan app: sidebar, project bar, the module
+ * tab group with progress and a primary action, then the page.
+ */
+export function WorkspaceShell({ tab, compact, action, children }: { tab: number; compact?: boolean; action?: string; children: ReactNode }) {
   return (
     <div className="flex h-full bg-[#0a0a0d] font-sans text-[#e8e8ea]">
-      {!compact && (
-        <div className="flex w-[64px] shrink-0 flex-col items-center gap-2 border-r border-[#1c1c22] py-4">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={`${A}/project-pic.png`} alt="" className="mb-4 h-8 w-8 rounded-lg border border-[#26262c] object-cover" />
-          {SIDEBAR_ICONS.map((Icon, i) => (
-            <div key={i} className={`flex h-10 w-10 items-center justify-center rounded-xl ${i === 2 ? "bg-[#f2f2f2] text-[#0a0a0d]" : "text-[#6b6b76]"}`}>
-              <Icon size={18} />
-            </div>
-          ))}
-          <div className="flex-1" />
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#f2f2f2] text-[#0a0a0d]">
-            <OpenPlanLogo className="h-3.5 w-3.5" />
-          </div>
-        </div>
-      )}
+      {!compact && <AppSidebar active={2} />}
       <div className="flex min-w-0 flex-1 flex-col">
-        <div className="flex h-[56px] shrink-0 items-center justify-between gap-3 border-b border-[#1c1c22] px-5">
-          <div className="flex min-w-0 items-center gap-2">
-            <ChevronLeft size={16} className="shrink-0 text-[#6b6b76]" />
-            <span className="truncate text-[15px] font-semibold text-[#fff]">Autonomous Rover Development</span>
+        <div className="flex h-[52px] shrink-0 items-center justify-between gap-3 border-b border-[#1c1c22] px-5">
+          <div className="flex min-w-0 items-center gap-1.5">
+            <span className="truncate text-[16px] font-semibold text-[#fff]">Autonomous Rover</span>
             <ChevronDown size={14} className="shrink-0 text-[#6b6b76]" />
           </div>
-          <div className="flex shrink-0 items-center gap-1 text-[#6b6b76]">
+          <div className="flex shrink-0 items-center gap-1.5 text-[#a8a8ae]">
             {!compact && (
-              <span className="mr-2 flex h-8 items-center gap-1.5 rounded-full border border-[#26262c] bg-[#1a1a1f] px-3 text-[12px] text-[#c8c8cc]">
-                <Sparkles size={13} /> Ask <span className="text-[10px] text-[#6b6b76]">(BETA)</span>
+              <span className="mr-1 flex h-8 items-center gap-1.5 rounded-lg border border-[#26262c] bg-[#111114] px-3 text-[12.5px] text-[#c8c8cc]">
+                <Sparkles size={13} /> Ask <span className="text-[9.5px] text-[#6b6b76]">(BETA)</span>
               </span>
             )}
-            {[Moon, Bell].map((Icon, i) => (
-              <div key={i} className="flex h-9 w-9 items-center justify-center rounded-full">
-                <Icon size={17} />
+            {(compact ? [Moon, Bell] : [Puzzle, Moon, Bell]).map((Icon, i, all) => (
+              <div key={i} className="relative flex h-8 w-8 items-center justify-center">
+                <Icon size={16} />
+                {i === all.length - 1 && <span className="absolute -right-0.5 -top-0.5 rounded-full bg-[#2f5bff] px-1 text-[8.5px] font-semibold leading-[13px] text-[#fff]">12</span>}
               </div>
             ))}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={AVATARS.John} alt="" className="ml-1 h-8 w-8 rounded-full object-cover" />
           </div>
         </div>
-        <div className="flex h-[48px] shrink-0 items-center gap-1 overflow-hidden border-b border-[#1c1c22] px-4">
-          {TABS.map(({ label, Icon, n }, i) => {
-            const on = i === tab;
-            return (
-              <span key={label} className={`relative flex h-full shrink-0 items-center gap-1.5 px-3 text-[13px] ${on ? "font-medium text-[#fff]" : "text-[#6b6b76]"}`}>
-                <Icon size={14} />
-                {label}
-                {n !== null && <span className="rounded-full bg-[#1a1a1f] px-1.5 text-[10px] text-[#8b8b93]">{n}</span>}
-                {on && (
-                  <motion.span initial={{ scaleX: 0 }} animate={{ scaleX: 1 }} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="absolute inset-x-2 bottom-0 h-[2px] origin-left bg-[#fff]" />
-                )}
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[#1c1c22] px-5 py-2.5">
+          <div className="flex min-w-0 items-center gap-0.5 overflow-hidden rounded-xl border border-[#1e1e24] bg-[#0f0f12] p-1">
+            {TABS.map(({ label, Icon, n }, i) => {
+              const on = i === tab;
+              return (
+                <span key={label} className={`relative flex h-8 shrink-0 items-center gap-1.5 rounded-lg px-2.5 text-[12.5px] ${on ? "font-medium text-[#fff]" : "text-[#8b8b93]"}`}>
+                  {on && <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }} className="absolute inset-0 rounded-lg bg-[#1c1c22]" />}
+                  <Icon size={14} className="relative" />
+                  <span className="relative">{label}</span>
+                  {n !== null && <span className="relative rounded-full bg-[#1f1f25] px-1.5 text-[9.5px] font-semibold text-[#c8c8cc]">{n}</span>}
+                </span>
+              );
+            })}
+          </div>
+          {!compact && action && (
+            <div className="flex shrink-0 items-center gap-2">
+              <span className="block h-[5px] w-[70px] overflow-hidden rounded-full bg-[#1f1f25]">
+                <span className="block h-full w-[16%] rounded-full bg-[#fff]" />
               </span>
-            );
-          })}
+              <span className="text-[11.5px] font-semibold text-[#fff]">16%</span>
+              <span className="ml-1 flex h-8 items-center gap-1.5 rounded-lg bg-[#fff] px-3 text-[12px] font-medium text-[#0a0a0d]">+ {action}</span>
+            </div>
+          )}
         </div>
         {children}
       </div>

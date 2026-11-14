@@ -153,6 +153,100 @@ function ImportList() {
 
 /* ---------- 02 / 03 · product-model graph ---------- */
 
+/* ---------- 03 · baseline approval ---------- */
+
+// COPY FOR APPROVAL: approvers and roles
+const APPROVERS = [
+  { initials: "NK", name: "Noah Kim", role: "Systems engineering" },
+  { initials: "MR", name: "Mariana Ruiz", role: "Electrical" },
+  { initials: "JO", name: "Jonathan Okafor", role: "Mechanical" },
+  { initials: "AL", name: "Ana Lima", role: "Quality" },
+  { initials: "MC", name: "Marcus Chen", role: "Programme lead" },
+];
+const GREEN = "#4FBF8A";
+
+/** Sign-offs land one after another; the plate is finalised once everyone has approved. */
+function ApprovalPlate() {
+  const reduce = useReducedMotion();
+  const [ref, inView] = useInViewOnce<HTMLDivElement>();
+  const [done, setDone] = useState(0);
+  useEffect(() => {
+    if (!inView) return;
+    if (reduce) {
+      const id = window.setTimeout(() => setDone(APPROVERS.length), 0);
+      return () => window.clearTimeout(id);
+    }
+    const ids = APPROVERS.map((_, i) => window.setTimeout(() => setDone(i + 1), 1300 + i * 650));
+    return () => ids.forEach(window.clearTimeout);
+  }, [inView, reduce]);
+  const all = done === APPROVERS.length;
+
+  return (
+    <div ref={ref} className={plate} style={{ border: `1px solid ${RULE}` }}>
+      <PlateHeader label="Baseline approval" meta={`${done} / ${APPROVERS.length} signed`} tone={all ? GREEN : BLUE} pulse={!all} />
+      <div className="flex min-w-0 flex-col justify-center gap-3">
+        <ul className="m-0 grid list-none gap-1.5 p-0">
+          {APPROVERS.map((a, i) => {
+            const ok = i < done;
+            const reviewing = !ok && i === done && inView;
+            return (
+              <motion.li
+                key={a.name}
+                initial={reduce ? false : { opacity: 0, y: 6 }}
+                animate={inView ? { opacity: 1, y: 0 } : undefined}
+                transition={{ duration: 0.45, ease: revealEase, delay: 0.15 + i * 0.1 }}
+                className="flex h-[40px] min-w-0 items-center gap-3 border px-2.5 transition-colors duration-500"
+                style={{ borderColor: ok ? "rgba(79,191,138,0.35)" : reviewing ? "rgba(91,127,255,0.45)" : "rgba(255,255,255,0.09)", background: ok ? "rgba(79,191,138,0.05)" : "#111113" }}
+              >
+                <span
+                  aria-hidden
+                  className="grid h-[24px] w-[24px] flex-none place-items-center border font-mono text-[10px] transition-colors duration-500"
+                  style={{ borderColor: ok ? `${GREEN}66` : "rgba(255,255,255,0.18)", color: ok ? GREEN : "rgba(255,255,255,0.7)" }}
+                >
+                  {a.initials}
+                </span>
+                <span className="flex min-w-0 flex-1 flex-col">
+                  <span className="truncate text-[13px] leading-tight text-white/90">{a.name}</span>
+                  <span className="truncate font-mono text-[10px] uppercase leading-tight tracking-[0.06em] text-white/40">{a.role}</span>
+                </span>
+                <span className="flex flex-none items-center gap-1.5 font-mono text-[10.5px] uppercase tracking-[0.06em]">
+                  {ok ? (
+                    <motion.span initial={reduce ? false : { opacity: 0, scale: 0.6 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3, ease: revealEase }} className="flex items-center gap-1" style={{ color: GREEN }}>
+                      <Check size={13} strokeWidth={2.2} /> Approved
+                    </motion.span>
+                  ) : reviewing ? (
+                    <span className="flex items-center gap-1.5" style={{ color: BLUE }}>
+                      <span className="h-[6px] w-[6px] animate-pulse" style={{ background: BLUE }} /> Reviewing
+                    </span>
+                  ) : (
+                    <span className="text-white/35">Pending</span>
+                  )}
+                </span>
+              </motion.li>
+            );
+          })}
+        </ul>
+        <span className="block h-[3px] overflow-hidden bg-white/[0.07]">
+          <span className="block h-full transition-[width] duration-500 ease-out" style={{ width: `${(done / APPROVERS.length) * 100}%`, background: all ? GREEN : BLUE }} />
+        </span>
+      </div>
+      <div className={plateFooter} style={{ borderColor: RULE }}>
+        <p className="m-0 flex items-center gap-1.5 text-[14px] transition-colors duration-500" style={{ color: all ? "#fff" : "rgba(255,255,255,0.55)" }}>
+          {all ? (
+            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke={GREEN} strokeWidth="1.6" aria-hidden>
+              <path d="M4.5 10.5l3.5 3.5 7.5-8" />
+            </svg>
+          ) : (
+            <span aria-hidden className="h-[7px] w-[7px] flex-none border border-current" />
+          )}
+          {/* COPY FOR APPROVAL */}
+          {all ? "Baseline v1.0 approved · Locked" : "Awaiting sign-off"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 const GH = 236; // graph height (px)
 const NH = 40; // record card height
 const LEFT = 0.25; // system card width (fraction)
@@ -334,7 +428,7 @@ const plateFooter = "flex min-h-[44px] min-w-0 items-center border-t pt-3";
 
 const steps: { title: string; body: string; visual: ReactNode }[] = [
   {
-    title: "Import existing files",
+    title: "Import your current files",
     body: "Import BOMs, requirements, tests and other programme information into OpenPlan, in the formats your team uses today.",
     visual: (
       <div className={plate} style={{ border: `1px solid ${RULE}` }}>
@@ -347,7 +441,7 @@ const steps: { title: string; body: string; visual: ReactNode }[] = [
     ),
   },
   {
-    title: "Agent prepares draft proposal",
+    title: "OpenPlan drafts the structure",
     body: "The import agent carefully reads and connects the supplied information, then drafts your architecture and record mapping.",
     visual: (
       <div className={plate} style={{ border: `1px dashed ${DRAFT_RULE}` }}>
@@ -365,24 +459,9 @@ const steps: { title: string; body: string; visual: ReactNode }[] = [
     ),
   },
   {
-    title: "Review and finalise",
+    title: "Team approves the baseline",
     body: "Review the architecture and record mapping, refine the proposal and finalise your starting product model.",
-    visual: (
-      <div className={plate} style={{ border: `1px solid ${RULE}` }}>
-        <PlateHeader label="Product model" meta="Baseline v1.0" tone="#4FBF8A" />
-        <div className="flex min-w-0 flex-col justify-center">
-          <Graph draft={false} />
-        </div>
-        <div className={plateFooter} style={{ borderColor: RULE }}>
-          <p className="m-0 flex items-center gap-1.5 text-[14px] text-white">
-            <svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke={BLUE} strokeWidth="1.6" aria-hidden>
-              <path d="M4.5 10.5l3.5 3.5 7.5-8" />
-            </svg>
-            Reviewed · Finalised
-          </p>
-        </div>
-      </div>
-    ),
+    visual: <ApprovalPlate />,
   },
 ];
 
@@ -401,7 +480,7 @@ export default function GetStarted() {
           </div>
         </BlurReveal>
         <h2 className="text-balance text-4xl font-medium leading-[1.05] tracking-[-0.045em] sm:text-5xl">
-          <BlurWords text="Start working in OpenPlan in 5 minutes." />
+          <BlurWords text="Start from the systems you already have." />
         </h2>
         <BlurReveal delay={0.2}>
           <p className="mt-5 max-w-[920px] text-pretty text-[16px] leading-relaxed text-white/60 sm:text-[17px]">

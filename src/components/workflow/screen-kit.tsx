@@ -114,7 +114,7 @@ export function Scaled({ compact, children, className = "" }: { compact?: boolea
   return (
     <div ref={ref} className={`relative w-full overflow-hidden ${className}`} style={{ aspectRatio: `${size.w} / ${size.h}`, background: C.bg }}>
       <div
-        className="absolute left-0 top-0 origin-top-left text-[13px] leading-[1.45] antialiased"
+        className="app-screen absolute left-0 top-0 origin-top-left text-[13px] leading-[1.45] antialiased"
         style={{ width: size.w, height: size.h, transform: `scale(${s})`, color: C.text, visibility: s ? "visible" : "hidden" }}
       >
         {children}

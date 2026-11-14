@@ -18,6 +18,7 @@ const OpenPlanSlides = lazy(() => import("@/components/slides/OpenPlanSlides"));
 const Features = lazy(() => import("@/components/Features"));
 const Industries = lazy(() => import("@/components/Industries"));
 const Pricing = lazy(() => import("@/components/Pricing"));
+const FAQ = lazy(() => import("@/components/FAQ"));
 const BlogSection = lazy(() => import("@/components/BlogSection"));
 const GetStarted = lazy(() => import("@/components/GetStarted"));
 const PreFooterCTA = lazy(() => import("@/components/PreFooterCTA"));
@@ -110,6 +111,7 @@ const Index = () => {
           <Features />
           <Industries />
           <Pricing />
+          <FAQ />
           <BlogSection />
         </PanelClip>
         <PreFooterCTA />
