@@ -308,7 +308,8 @@ export function ChatView({ prompt, cards, cardHeight, thinking }: { prompt: stri
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="min-h-0 flex-1 overflow-hidden px-6 py-8">
-        <div className="mx-auto flex max-w-[690px] flex-col gap-4">
+        {/* same width as the card stack, so the bubble's right edge lines up with the cards */}
+        <div className="mx-auto flex max-w-[940px] flex-col gap-4">
           <UserBubble text={prompt} />
         </div>
         {cards.length === 0 ? (

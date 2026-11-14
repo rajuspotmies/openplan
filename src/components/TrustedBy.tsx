@@ -17,7 +17,18 @@ const logos: Logo[] = [
 export default function TrustedBy() {
   return (
     <section aria-label="Trusted by teams at" className="relative bg-[#0A0A0B] text-white">
-      <div className="mx-auto w-[min(1600px,calc(100%-2*clamp(12px,2.4vw,36px)))] border-x border-b border-white/[0.08] px-[clamp(16px,4vw,72px)] pb-10 pt-12 md:pb-14 md:pt-16">
+      {/* fades the hero's bottom edge into the page black, so the panel has no hard seam */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-full h-[340px]"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(10,10,11,0) 0%, rgba(10,10,11,0.18) 25%, rgba(10,10,11,0.45) 50%, rgba(10,10,11,0.75) 72%, rgba(10,10,11,0.93) 88%, #0A0A0B 100%)",
+        }}
+      />
+      <div className="mx-auto w-[min(1600px,calc(100%-2*clamp(12px,2.4vw,36px)))] relative border-b border-white/[0.08] px-[clamp(16px,4vw,72px)] pb-10 pt-12 md:pb-14 md:pt-16">
+        <span aria-hidden className="pointer-events-none absolute inset-y-0 -left-px w-px bg-gradient-to-b from-white/0 to-white/[0.08] to-[160px]" />
+        <span aria-hidden className="pointer-events-none absolute inset-y-0 -right-px w-px bg-gradient-to-b from-white/0 to-white/[0.08] to-[160px]" />
         <p className="text-center font-mono text-[11px] uppercase tracking-[0.14em] text-white/45 sm:text-[12px]">
           Trusted by teams at
         </p>
