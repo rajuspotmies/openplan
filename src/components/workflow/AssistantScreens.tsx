@@ -200,11 +200,11 @@ export function ArchitectScreen({ active, step, compact }: ScreenProps) {
   const thinking = thinkingIdx >= 0 ? t - THINKS[thinkingIdx] : null;
   return (
     <Scaled compact={compact}>
-      <AssistantShell compact={compact}>
+      <AssistantShell compact={compact} bare>
         <AnimatePresence mode="wait" initial={false}>
           {t < S1.send ? (
             <motion.div key="idle" className="flex min-h-0 flex-1" exit={{ opacity: 0, transition: { duration: 0.2 } }}>
-              <IdleView value={typedText} sending={t > S1.send - 0.35} compact={compact} />
+              <IdleView value={typedText} sending={t > S1.send - 0.35} compact={compact} bare />
             </motion.div>
           ) : (
             <motion.div key="chat" className="flex min-h-0 flex-1" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }}>
@@ -299,7 +299,7 @@ export function BomScreen({ active, step, compact }: ScreenProps) {
   const specStarts = BOM_SPEC.map((r) => [c.take(r.label.length), c.take(r.value.length)] as [number, number]);
   return (
     <Scaled compact={compact}>
-      <WorkspaceShell tab={1} compact={compact} action="Add Part">
+      <WorkspaceShell tab={1} compact={compact} action="Add Part" bare>
         <DocCard
           bare
           title="Bill of Materials"

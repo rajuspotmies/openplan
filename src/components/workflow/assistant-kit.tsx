@@ -59,7 +59,9 @@ function OpenPlanLogo({ className }: { className?: string }) {
 
 const SIDEBAR_ICONS = [LayoutGrid, Sparkles, FolderKanban, MessageSquare, Users, Plug, Settings];
 
-export function AssistantShell({ compact, children }: { compact?: boolean; children: ReactNode }) {
+export function AssistantShell({ compact, bare, children }: { compact?: boolean; bare?: boolean; children: ReactNode }) {
+  // bare: chat area only, without the app sidebar and the Assistant top bar
+  if (bare) return <div className="flex h-full flex-col bg-[#0a0a0d] font-sans text-[#e8e8ea]">{children}</div>;
   return (
     <div className="flex h-full bg-[#0a0a0d] font-sans text-[#e8e8ea]">
       {!compact && (
@@ -161,13 +163,14 @@ export function InputPill({ value, compact, sending }: { value: string; compact?
 const SUGGESTION_ICONS = [Activity, ClipboardList, ShieldAlert, Flag, ListChecks, TriangleAlert];
 
 /** Landing state: greeting, beam-lit input and suggestion pills. */
-export function IdleView({ value, sending, compact }: { value: string; sending: boolean; compact?: boolean }) {
+export function IdleView({ value, sending, compact, bare }: { value: string; sending: boolean; compact?: boolean; bare?: boolean }) {
   return (
     <div className="flex flex-1 flex-col items-center justify-center px-6">
       <motion.h1 initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }} className="mb-6 text-[28px] font-bold text-[#fff]">
         What can I help with, {USER_NAME}?
       </motion.h1>
       <InputPill value={value} sending={sending} />
+      {!bare && (
       <div className="mt-6 flex w-full max-w-[690px] flex-col items-center gap-2.5">
         {SUGGESTIONS.slice(0, compact ? 3 : 6).map((text, i) => {
           const Icon = SUGGESTION_ICONS[i];
@@ -185,6 +188,7 @@ export function IdleView({ value, sending, compact }: { value: string; sending: 
           );
         })}
       </div>
+      )}
     </div>
   );
 }
