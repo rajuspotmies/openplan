@@ -124,7 +124,7 @@ const Contact = () => {
                 <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
                 <a
                   className="text-xs sm:text-sm hover:underline text-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded"
-                  href="mailto:info@openplan.io"
+                  href="mailto:info@openplanai.com"
                 >
                   info@openplanai.com
                 </a>
@@ -280,7 +280,7 @@ const Contact = () => {
 
                   {submitStatus === "error" && (
                     <div className="mt-4 p-3 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-sm">
-                      {submitErrorMessage || "Something went wrong. Please try again or contact us directly at info@openplan.io"}
+                      {submitErrorMessage || "Something went wrong. Please try again or contact us directly at info@openplanai.com"}
                     </div>
                   )}
 
