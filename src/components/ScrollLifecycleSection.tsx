@@ -9,6 +9,7 @@ const requirementsImg = "/assets/featureImages/requirements.png";
 import { useNavigate } from "@/lib/router";
 import BlurReveal, { BlurWords, revealEase } from "@/components/motion/BlurReveal";
 import WorkflowShowcase, { type WorkflowTip } from "@/components/WorkflowShowcase";
+import { ArchitectScreen, BomScreen, EcoScreen, RequirementsScreen } from "@/components/workflow/AssistantScreens";
 
 const stages = [
   {
@@ -25,10 +26,12 @@ const stages = [
     ],
     cta: "Explore AI-native planning",
     image: fai, // Using an existing feature image as a placeholder
+    screen: ArchitectScreen,
     tips: [
-      { pin: [24.5, 15], at: [52, 10.5], anchor: [0, -50], w: 30, text: "Paste a PRD. Scope, team and certifications, in plain words." },
-      { pin: [34.5, 41], at: [52, 52], anchor: [0, -50], w: 30, text: "It asks before it guesses: preferred suppliers, target timeline." },
-      { pin: [44, 84], at: [56, 84], anchor: [0, -50], w: 30, text: "Modules, tasks, milestones and a 30-week plan come back." },
+      // COPY FOR APPROVAL: callouts for the live Assistant screens
+      { pin: [34, 34], at: [55, 11], anchor: [0, -50], w: 30, text: "Describe what you're building, in plain words." },
+      { pin: [53, 23], at: [65, 40], anchor: [0, -50], w: 30, text: "OpenPlan AI searches, thinks and works out a plan." },
+      { pin: [30, 50], at: [52, 80], anchor: [0, -50], w: 30, text: "Tasks come back on a board, from backlog to done." },
     ] as WorkflowTip[],
   },
   {
@@ -45,10 +48,11 @@ const stages = [
     ],
     cta: "Explore requirements traceability",
     image: requirementsImg,
+    screen: RequirementsScreen,
     tips: [
-      { pin: [11, 23.5], at: [11, 31], anchor: [-8, 0], w: 28, text: "Verification coverage, tracked live across the project." },
-      { pin: [13.5, 46.5], at: [26, 52], anchor: [0, -50], w: 32, text: "Five tiers: need → stakeholder → system → subsystem → component." },
-      { pin: [82.5, 42], at: [82.5, 53], anchor: [-60, 0], w: 28, text: "Every requirement carries its verification status." },
+      { pin: [20, 26], at: [40, 22], anchor: [0, -50], w: 28, text: "Counts update live as each requirement lands." },
+      { pin: [30, 60], at: [55, 90], anchor: [0, -50], w: 30, text: "Need to component, every branch traced in one tree." },
+      { pin: [46, 62], at: [62, 90], anchor: [0, -50], w: 30, text: "Each requirement carries its review and verification status." },
     ] as WorkflowTip[],
   },
   {
@@ -65,10 +69,11 @@ const stages = [
     ],
     cta: "Explore BOM workflows",
     image: feature1,
+    screen: BomScreen,
     tips: [
-      { pin: [81, 22], at: [81, 33], anchor: [-55, 0], w: 26, text: "Cost rolls up across the whole assembly." },
-      { pin: [8.5, 47], at: [14, 60], anchor: [0, 0], w: 30, text: "Multi-level structure. Every revision is kept." },
-      { pin: [81.5, 47.5], at: [74, 62], anchor: [-40, 0], w: 30, text: "Each part links back to the requirement it meets." },
+      { pin: [86, 26], at: [70, 40], anchor: [-50, 0], w: 28, text: "Parts, approvals and cost roll up automatically." },
+      { pin: [24, 45], at: [45, 90], anchor: [0, -50], w: 30, text: "Every part with its photo, supplier, price and lead time." },
+      { pin: [30, 38], at: [55, 90], anchor: [0, -50], w: 28, text: "Draft or approved, every part is versioned." },
     ] as WorkflowTip[],
   },
   {
@@ -85,15 +90,29 @@ const stages = [
     ],
     cta: "Explore ECO workflows",
     image: feature2,
+    screen: EcoScreen,
     tips: [
-      { pin: [70, 31], at: [70, 45], anchor: [-50, 0], w: 30, text: "Approvals move stage by stage. Here, QA signs off next." },
-      { pin: [41, 61], at: [41, 74], anchor: [-50, 0], w: 30, text: "Rev A against Rev B, parameter by parameter." },
+      { pin: [20, 55], at: [55, 90], anchor: [0, -50], w: 30, text: "Every change is logged with the reason behind it." },
+      { pin: [70, 30], at: [70, 90], anchor: [-50, -50], w: 30, text: "Affected subsystems, tests and approval in one notice." },
     ] as WorkflowTip[],
   },
 ];
 
+function useIsDesktop() {
+  const [desktop, setDesktop] = useState<boolean | null>(null);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setDesktop(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return desktop;
+}
+
 const ScrollLifecycleSection = () => {
   const navigate = useNavigate();
+  const isDesktop = useIsDesktop();
   const [current, setCurrent] = useState(0);
   const stageRefs = useRef<Array<HTMLElement | null>>([]);
 
@@ -188,8 +207,12 @@ const ScrollLifecycleSection = () => {
                 </h3>
 
                 <BlurReveal y={24} blur={14} delay={0.05}>
-                  <div className="relative overflow-hidden border border-black/[0.08] bg-white shadow-[0_24px_60px_-34px_rgba(10,10,11,0.35)]">
-                    <img src={s.image} alt={s.title} loading="lazy" className="relative h-auto w-full object-contain" />
+                  <div className="relative overflow-hidden rounded-[8px] border border-white/[0.1] bg-[#0c0c0d] shadow-[0_24px_60px_-34px_rgba(0,0,0,0.7)]">
+                    {isDesktop === false && Math.abs(current - i) <= 1 ? (
+                      <s.screen active={current === i} step={null} compact />
+                    ) : (
+                      <div className="aspect-[560/780] w-full" />
+                    )}
                   </div>
                 </BlurReveal>
 
@@ -228,7 +251,7 @@ const ScrollLifecycleSection = () => {
 
       {/* =====================  DESKTOP: sticky product screen with stage tabs  ===================== */}
       <div className="hidden lg:block">
-        <WorkflowShowcase stages={stages} onCta={() => navigate("/waitlist")} />
+        <WorkflowShowcase stages={stages} onCta={() => navigate("/waitlist")} live={isDesktop === true} />
       </div>
 
     </section>

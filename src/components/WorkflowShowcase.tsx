@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import { ArrowUpRight } from "lucide-react";
+import type { ComponentType } from "react";
+import type { ScreenProps } from "@/components/workflow/screen-kit";
 import "./workflow-tour.css";
 
 /*
@@ -36,6 +38,8 @@ export interface WorkflowStage {
   description: string;
   cta: string;
   image: string;
+  /** live, self-playing product screen; falls back to `image` */
+  screen?: ComponentType<ScreenProps>;
   tips: WorkflowTip[];
 }
 
@@ -48,8 +52,22 @@ const TAB_LABEL: Record<string, string> = {
 
 const EASE = "cubic-bezier(0.22,1,0.36,1)";
 
-export default function WorkflowShowcase({ stages, onCta }: { stages: WorkflowStage[]; onCta: () => void }) {
+export default function WorkflowShowcase({ stages, onCta, live = true }: { stages: WorkflowStage[]; onCta: () => void; live?: boolean }) {
   const [active, setActive] = useState(0);
+  // Live screens are heavy: keep only the active one mounted, plus the one fading out.
+  const [leaving, setLeaving] = useState<number | null>(null);
+  const prevActive = useRef(0);
+  useEffect(() => {
+    if (prevActive.current === active) return;
+    const from = prevActive.current;
+    prevActive.current = active;
+    const show = window.setTimeout(() => setLeaving(from), 0);
+    const hide = window.setTimeout(() => setLeaving(null), 700);
+    return () => {
+      window.clearTimeout(show);
+      window.clearTimeout(hide);
+    };
+  }, [active]);
   const [tip, setTip] = useState(-1); // callout index within the active stage, -1 = none yet
   const steps = useRef<Array<HTMLLIElement | null>>([]);
   const fills = useRef<Array<HTMLSpanElement | null>>([]);
@@ -229,7 +247,10 @@ export default function WorkflowShowcase({ stages, onCta }: { stages: WorkflowSt
                           transition: `opacity .5s ${EASE}, transform .7s ${EASE}`,
                         }}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        {s.screen ? (
+                          live && (on || i === leaving) && <s.screen active={on} step={on ? Math.max(tip, 0) : 0} />
+                        ) : (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={s.image}
                           alt={on ? s.title : ""}
@@ -237,6 +258,7 @@ export default function WorkflowShowcase({ stages, onCta }: { stages: WorkflowSt
                           decoding="async"
                           className="block h-full w-full object-cover object-left-top"
                         />
+                        )}
                       </div>
                     );
                   })}
