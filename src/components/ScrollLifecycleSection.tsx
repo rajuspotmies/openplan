@@ -114,6 +114,7 @@ const ScrollLifecycleSection = () => {
   const navigate = useNavigate();
   const isDesktop = useIsDesktop();
   const [current, setCurrent] = useState(0);
+  const [reached, setReached] = useState(false); // live screens wait until the section is reached
   const stageRefs = useRef<Array<HTMLElement | null>>([]);
 
   /* ── Mobile: scroll-spy — the stage crossing the upper third of the screen is current ── */
@@ -123,7 +124,10 @@ const ScrollLifecycleSection = () => {
     const io = new IntersectionObserver(
       (entries) => {
         for (const e of entries) {
-          if (e.isIntersecting) setCurrent(Number((e.target as HTMLElement).dataset.index));
+          if (e.isIntersecting) {
+            setCurrent(Number((e.target as HTMLElement).dataset.index));
+            setReached(true);
+          }
         }
       },
       { rootMargin: "-30% 0px -65% 0px" },
@@ -209,7 +213,7 @@ const ScrollLifecycleSection = () => {
                 <BlurReveal y={24} blur={14} delay={0.05}>
                   <div className="relative overflow-hidden rounded-[8px] border border-white/[0.1] bg-[#0c0c0d] shadow-[0_24px_60px_-34px_rgba(0,0,0,0.7)]">
                     {isDesktop === false && Math.abs(current - i) <= 1 ? (
-                      <s.screen active={current === i} step={null} compact />
+                      <s.screen active={reached && current === i} step={null} compact />
                     ) : (
                       <div className="aspect-[560/780] w-full" />
                     )}

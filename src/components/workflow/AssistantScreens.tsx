@@ -238,7 +238,7 @@ export function RequirementsScreen({ active, step, compact }: ScreenProps) {
   const n = (f: (l: (typeof shown)[number]) => boolean) => shown.filter(f).length;
   return (
     <Scaled compact={compact}>
-      <WorkspaceShell tab={0} compact={compact} action="New Requirement">
+      <WorkspaceShell tab={0} compact={compact} action="New Requirement" bare>
         <DocCard
           bare
           title="Requirements"

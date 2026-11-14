@@ -838,7 +838,9 @@ export function AppSidebar({ active }: { active: number }) {
  * The project workspace, as in the OpenPlan app: sidebar, project bar, the module
  * tab group with progress and a primary action, then the page.
  */
-export function WorkspaceShell({ tab, compact, action, children }: { tab: number; compact?: boolean; action?: string; children: ReactNode }) {
+export function WorkspaceShell({ tab, compact, action, bare, children }: { tab: number; compact?: boolean; action?: string; bare?: boolean; children: ReactNode }) {
+  // bare: page content only, without the app sidebar, project bar and tab row
+  if (bare) return <div className="flex h-full flex-col bg-[#0a0a0d] font-sans text-[#e8e8ea]">{children}</div>;
   return (
     <div className="flex h-full bg-[#0a0a0d] font-sans text-[#e8e8ea]">
       {!compact && <AppSidebar active={2} />}

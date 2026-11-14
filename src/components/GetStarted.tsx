@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { motion, useInView, useReducedMotion } from "framer-motion";
 import { ArrowDownToLine, Check, FileSpreadsheet, FileText, Presentation, Sheet, type LucideIcon } from "lucide-react";
 import BlurReveal, { BlurWords, revealEase } from "@/components/motion/BlurReveal";
@@ -466,6 +466,9 @@ const steps: { title: string; body: string; visual: ReactNode }[] = [
 ];
 
 export default function GetStarted() {
+  // Bumping a card's key remounts its visual, so hovering a card replays its animation.
+  const [plays, setPlays] = useState([0, 0, 0]);
+  const replay = (i: number) => setPlays((p) => p.map((n, j) => (j === i ? n + 1 : n)));
   return (
     <section id="getting-started" className="relative bg-[#0A0A0B] text-white">
       <div className="mx-auto w-[min(1600px,calc(100%-2*clamp(12px,2.4vw,36px)))] border-x border-white/[0.08] px-[clamp(16px,4vw,72px)] py-24 md:py-32">
@@ -493,6 +496,7 @@ export default function GetStarted() {
           {steps.map((s, i) => (
             <li
               key={s.title}
+              onMouseEnter={() => replay(i)}
               className="grid min-w-0 gap-2.5 border-t border-white/[0.1] pt-3 max-lg:[&:not(:first-child)]:mt-4 lg:row-span-4 lg:grid-rows-subgrid lg:gap-3"
             >
               <BlurReveal delay={0.08 * i} y={10} blur={8}>
@@ -507,7 +511,7 @@ export default function GetStarted() {
                 <p className="m-0 text-[15px] leading-[1.5] text-white/60 sm:text-[16px]">{s.body}</p>
               </BlurReveal>
               <BlurReveal delay={0.08 * i + 0.14} y={22} blur={14} className="relative mt-0.5 flex min-w-0">
-                {s.visual}
+                <Fragment key={plays[i]}>{s.visual}</Fragment>
                 {i < steps.length - 1 && (
                   <span aria-hidden className="absolute left-[calc(100%+9px)] top-1/2 hidden -translate-y-1/2 lg:block" style={{ color: BLUE }}>
                     <Arrow />
